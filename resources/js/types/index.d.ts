@@ -76,3 +76,10 @@ export interface Collection {
   rel_path: string;
   partner: Partner;
 }
+
+
+export interface ViewerImage {
+  alt: string;
+  title: string;
+  src: string;
+}

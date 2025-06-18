@@ -1,7 +1,7 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use Inertia\Inertia;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ImagesController;
 use App\Http\Controllers\PartnersController;
@@ -38,9 +38,8 @@ Route::middleware(['auth', 'verified'])->group(function () {
 
 Route::middleware('guest')->group(function () {
 
-    Route::get('/', function () {
-        return Inertia::render('welcome');
-    })->name('home');
+    Route::get('/', [WelcomeController::class, 'index'])
+      ->name('home');
 
     Route::get('login', [ExternalAuthController::class, 'create'])
         ->name('login');
