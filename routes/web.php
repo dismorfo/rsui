@@ -1,15 +1,15 @@
 <?php
 
 use Illuminate\Support\Facades\Route;
-use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\CollectionController;
 use App\Http\Controllers\ImagesController;
+use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\PartnersController;
 use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ExternalAuthController;
 
-Route::middleware(['auth', 'verified'])->group(function () {
+Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(function () {
 
     // List partners
     Route::get('dashboard', [PartnersController::class, 'index'])
@@ -32,20 +32,20 @@ Route::middleware(['auth', 'verified'])->group(function () {
         ->name('logout');
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
+        ->name('logout.post');
 
 });
 
 Route::middleware('guest')->group(function () {
 
     Route::get('/', [WelcomeController::class, 'index'])
-      ->name('home');
+	  ->name('home');
 
-    Route::get('login', [ExternalAuthController::class, 'create'])
+     Route::get('login', [ExternalAuthController::class, 'create'])
         ->name('login');
 
     Route::post('login', [ExternalAuthController::class, 'login'])
-        ->name('login');
+        ->name('login.post');
 
 });
 

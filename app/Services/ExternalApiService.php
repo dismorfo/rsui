@@ -17,16 +17,10 @@ class ExternalApiService
     protected $username;
     protected $password;
     protected $endpoint;
-    protected $v0endpoint;
-    protected $v0username;
-    protected $v0password;
 
     public function __construct()
     {
         $this->endpoint = config('services.rs.v1.endpoint');
-        $this->v0endpoint = config('services.rs.v0.endpoint');
-        $this->v0username = config('services.rs.v0.username');
-        $this->v0password = config('services.rs.v0.password');
     }
 
     /**
@@ -48,48 +42,19 @@ class ExternalApiService
     /**
      * Get a single resource by ID from the external API.
      *
-     * @param string $endpoint The API endpoint (e.g., 'products', 'users')
      * @param mixed $id The ID of the resource.
      * @return array|null The API response data, or null on failure.
      */
-    public function getPartnerId(string $id): ?array
+    public function getPartnerById(string $id, array $query = []): ?array
     {
 
         try {
 
-            $path = "partners/{$id}";
-
-            $response = Http::baseUrl($this->v0endpoint)
-                            ->withBasicAuth($this->v0username, $this->v0password)
-                            ->send('GET', $path, []);
-
-            // You might want more sophisticated error handling here
-            if ($response->failed()) {
-                // Log the error, throw an exception, or return a specific error structure
-                Log::error("External API request failed for {$path}: " . $response->body(), [
-                    'status' => $response->status(),
-                    'response' => $response->json(),
-                ]);
-                return null;
-            }
+            $response = $this->makeRequest('GET', "partners/{$id}", [ 'query' => $query, ]);
 
             $data = $response?->json();
 
-            $collection_path = "partners/{$id}/colls";
-
-            $collection_response = Http::baseUrl($this->v0endpoint)
-                            ->withBasicAuth($this->v0username, $this->v0password)
-                            ->send('GET', $collection_path, []);
-
-            // You might want more sophisticated error handling here
-            if ($collection_response->failed()) {
-                // Log the error, throw an exception, or return a specific error structure
-                Log::error("External API request failed for {$path}: " . $collection_response->body(), [
-                    'status' => $collection_response->status(),
-                    'response' => $collection_response->json(),
-                ]);
-                return null;
-            }
+            $collection_response = $this->makeRequest('GET', "partners/{$id}/colls", [ 'query' => $query, ]);
 
             $collection_data = $collection_response?->json();
 
@@ -106,7 +71,6 @@ class ExternalApiService
     /**
      * Get a single resource by ID from the external API.
      *
-     * @param string $endpoint The API endpoint (e.g., 'products', 'users')
      * @param mixed $id The ID of the resource.
      * @return array|null The API response data, or null on failure.
      */
@@ -131,7 +95,6 @@ class ExternalApiService
     /**
      * Get a single resource by ID from the external API.
      *
-     * @param string $endpoint The API endpoint (e.g., 'products', 'users')
      * @param mixed $id The ID of the resource.
      * @return array|null The API response data, or null on failure.
      */
@@ -160,8 +123,6 @@ class ExternalApiService
             // futher calls
             $cookie = session('external_auth_cookie');
 
-            Log::debug('Sending request', []);
-
             $domain = parse_url($this->endpoint, PHP_URL_HOST);
 
             $response = Http::baseUrl($this->endpoint)
@@ -169,17 +130,6 @@ class ExternalApiService
                     'Authorization' => $cookie, // or actual cookie name
                 ], $domain)
                 ->send($method, $path, $options);
-
-            // $body = $response->body();
-
-            // Log::debug('Response', [
-            //     'method' => $method,
-            //     'url' => $this->endpoint . $path,
-            //     'options' => $options,
-            //     'cookie' => $cookie,
-            //     'status' => $response->status(),
-            //     'headers' => $response->headers(),
-            // ]);
 
             // You might want more sophisticated error handling here
             if ($response->failed()) {

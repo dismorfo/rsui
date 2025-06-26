@@ -30,7 +30,7 @@ class PartnersController extends Controller
 
     public function show($id): Response
     {
-        $partner = $this->externalApiService->getPartnerId($id);
+        $partner = $this->externalApiService->getPartnerById($id);
 
         // Return a single Resource
         return Inertia::render('partner/Index', [ 'partner' => $partner, ]);

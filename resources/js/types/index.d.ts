@@ -51,7 +51,7 @@ export interface Partner {
   partners_url: string;
   colls_url: string;
   lock_version: number;
-  rel_path: string;
+  path: string;
   collections: Collection[];
 }
 
@@ -77,9 +77,12 @@ export interface Collection {
   partner: Partner;
 }
 
-
 export interface ViewerImage {
   alt: string;
   title: string;
   src: string;
+}
+
+export interface RBSE {
+    expires: number;
 }

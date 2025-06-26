@@ -21,7 +21,6 @@ export default function Welcome() {
                             <p className="mb-2 text-[#706f6c] dark:text-[#A1A09A]">
                               Primarily a service for faculty and librarians, Digital Preservation provides long-term archival storage, backup, and a method for future retrieval.
                             </p>
-
                             <ul className="flex gap-3 text-sm leading-normal">
                                 <li>
                                     <Link
@@ -34,8 +33,8 @@ export default function Welcome() {
                             </ul>
                         </div>
                         <div className="relative -mb-px aspect-[335/376] w-full shrink-0 overflow-hidden rounded-t-lg bg-[#fff2f2] lg:mb-0 lg:-ml-px lg:aspect-auto lg:w-[438px] lg:rounded-t-none lg:rounded-r-lg dark:bg-[#1D0002]">
-                          <img title={image.title} alt={image.alt} src={image.src}/>
-                        <div className="absolute inset-0 rounded-t-lg shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-t-none lg:rounded-r-lg dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]" />
+                            <img title={image.title} alt={image.alt} src={image.src}/>
+                            <div className="absolute inset-0 rounded-t-lg shadow-[inset_0px_0px_0px_1px_rgba(26,26,0,0.16)] lg:rounded-t-none lg:rounded-r-lg dark:shadow-[inset_0px_0px_0px_1px_#fffaed2d]" />
                         </div>
                     </main>
                 </div>
