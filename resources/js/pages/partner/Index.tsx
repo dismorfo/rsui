@@ -27,7 +27,7 @@ export default function Partner() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Partners" />
+            <Head title={partner.name} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{partner.name}</h4>
                 <div className="rounded-md border">

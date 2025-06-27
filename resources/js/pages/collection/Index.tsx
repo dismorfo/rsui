@@ -30,7 +30,7 @@ export default function Partner() {
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
-            <Head title="Partners" />
+            <Head title={`${collection.name} - ${partner.name}`} />
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{collection.name}</h4>
                 <Separator />
