@@ -1,18 +1,22 @@
-"use client"
+'use client'
 
-import * as React from "react"
-
-import type { ColumnDef, ColumnFiltersState } from '@tanstack/react-table'
-
-import { Partner, Collection } from '@/types';
-
-import { Link } from '@inertiajs/react';
-
-import { ChevronRight } from 'lucide-react';
-
-import { Button } from "@/components/ui/button"
-
+import * as React from 'react'
+import { Link } from '@inertiajs/react'
+import { ChevronRight } from 'lucide-react'
+import { Button } from '@/components/ui/button'
 import { ArrowUpDown } from 'lucide-react'
+
+import type {
+  ColumnDef,
+  ColumnFiltersState
+} from '@tanstack/react-table'
+
+import type {
+  Collection,
+  CollectionTableProps,
+  Partner,
+  PartnersTableProps
+} from '@/types'
 
 import {
   flexRender,
@@ -20,7 +24,7 @@ import {
   useReactTable,
   getSortedRowModel,
   getFilteredRowModel
-} from "@tanstack/react-table"
+} from '@tanstack/react-table'
 
 import {
   Table,
@@ -28,16 +32,8 @@ import {
   TableCell,
   TableHead,
   TableHeader,
-  TableRow,
-} from "@/components/ui/table"
-
-interface CollectionTableProps {
- collections: Collection[];
-}
-
-interface PartnersTableProps {
-  partners: Partner[];
-}
+  TableRow
+} from '@/components/ui/table'
 
 function DebouncedInput({
   value: initialValue,
@@ -195,7 +191,7 @@ export function PartnersTable({ partners }: PartnersTableProps) {
           value={globalFilter ?? ''}
           onChange={value => setGlobalFilter(String(value))}
           className="flex h-9 w-full rounded-md border border-input bg-transparent px-3 py-1 text-base shadow-sm transition-colors file:border-0 file:bg-transparent file:text-sm file:font-medium file:text-foreground placeholder:text-muted-foreground focus-visible:outline-none focus-visible:ring-1 focus-visible:ring-ring disabled:cursor-not-allowed disabled:opacity-50 md:text-sm max-w-sm"
-          placeholder="Filter by collection name or code"
+          placeholder="Filter by partner name or code"
         />
       </div>
       <div className="rounded-md border">
@@ -281,7 +277,7 @@ export function PartnerCollectionsTable({ collections }: CollectionTableProps) {
         filterFn: 'includesStringSensitive',
       },
       {
-        accessorKey: 'code',
+        accessorKey: 'display_code',
         header: () => (
           <div className="flex flex-col items-start">
             <div className="text-left py-2 px-4">Code</div>

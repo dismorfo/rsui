@@ -18,9 +18,9 @@ class CollectionController extends Controller
         $this->externalApiService = $externalApiService;
     }
 
-    public function show($id): Response
+    public function show(string $id): Response
     {
-
+        // Consider adding error handling for the API call
         $collection = $this->externalApiService->getCollectionById($id);
 
         $partner = [];

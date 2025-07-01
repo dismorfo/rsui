@@ -28,11 +28,8 @@ Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(func
     Route::get('settings/profile', [ProfileController::class, 'edit'])
         ->name('profile.edit');
 
-    Route::get('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout');
-
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
-        ->name('logout.post');
+        ->name('logout');
 
 });
 
@@ -49,7 +46,4 @@ Route::middleware('guest')->group(function () {
 
 });
 
-// Images
-Route::get('/img/{path}', [ImagesController::class, 'show'])
-    ->where('path', '.*')
-    ->name('image');
+

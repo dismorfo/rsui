@@ -28,8 +28,9 @@ class PartnersController extends Controller
 
     }
 
-    public function show($id): Response
+    public function show(string $id): Response
     {
+        // Consider adding error handling for the API call
         $partner = $this->externalApiService->getPartnerById($id);
 
         // Return a single Resource
