@@ -2,20 +2,15 @@
 
 namespace App\Services;
 
+use App\Exceptions\ExternalAuthSessionExpiredException;
 use Illuminate\Support\Facades\Http;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 
 use Exception;
 
-// Documentation:
-// https://docs.google.com/document/d/1Qfy7DrxQb4OBnngTxTYx1jdoyYlTnBZwKhKldK3u0dQ/edit?tab=t.0#heading=h.r1b4qlmg96t4
-
 class ExternalApiService
 {
-    protected $baseUrl;
-    protected $username;
-    protected $password;
     protected $endpoint;
 
     public function __construct()
@@ -27,14 +22,11 @@ class ExternalApiService
      * Get all resources from the external API.
      *
      * @param string $endpoint The API endpoint (e.g., 'products', 'users')
-     * @param array $query A key-value array of query parameters.
      * @return array|null The API response data, or null on failure.
      */
-    public function getAll(string $endpoint, array $query = []): ?array
+    public function getPartners(): ?array
     {
-        $response = $this->makeRequest('GET', $endpoint, [
-            'query' => $query,
-        ]);
+        $response = $this->makeRequest('GET', 'partners');
 
         return $response?->json();
     }
@@ -45,16 +37,16 @@ class ExternalApiService
      * @param mixed $id The ID of the resource.
      * @return array|null The API response data, or null on failure.
      */
-    public function getPartnerById(string $id, array $query = []): ?array
+    public function getPartnerById(string $id): ?array
     {
 
         try {
 
-            $response = $this->makeRequest('GET', "partners/{$id}", [ 'query' => $query, ]);
+            $response = $this->makeRequest('GET', "partners/{$id}");
 
             $data = $response?->json();
 
-            $collection_response = $this->makeRequest('GET', "partners/{$id}/colls", [ 'query' => $query, ]);
+            $collection_response = $this->makeRequest('GET', "partners/{$id}/colls");
 
             $collection_data = $collection_response?->json();
 
@@ -77,19 +69,32 @@ class ExternalApiService
     public function getCollectionById(string $id): ?array
     {
 
-       $response = $this->makeRequest('GET', "colls/{$id}");
+        try {
 
-       $data = $response?->json();
+            $response = $this->makeRequest('GET', "colls/{$id}");
 
-       $partnerId = $data['partner_id'];
+            $data = $response?->json();
 
-       $partner = $this->makeRequest('GET', "partners/{$partnerId}");
+            if (isset($data['partner_id'])) {
 
-       $partnerDataata = $partner?->json();
+                $partnerId = $data['partner_id'];
 
-       $data['partner'] = $partnerDataata;
+                $partner = $this->makeRequest('GET', "partners/{$partnerId}");
 
-       return $data;
+                $partnerDataata = $partner?->json();
+
+                $data['partner'] = $partnerDataata;
+
+                return $data;
+
+            } else {
+              throw new Exception('partner_id not set');
+            }
+
+        } catch (Exception $e) {
+            Log::error("getCollectionById error: " . $e->getMessage(), [ 'exception' => $e, ]);
+            return null;
+        }
     }
 
     /**
@@ -120,26 +125,29 @@ class ExternalApiService
     {
         try {
 
-            // futher calls
+            $this->validateSession();
+
             $cookie = session('external_auth_cookie');
 
             $domain = parse_url($this->endpoint, PHP_URL_HOST);
 
             $response = Http::baseUrl($this->endpoint)
                 ->withCookies([
-                    'Authorization' => $cookie, // or actual cookie name
+                    'Authorization' => $cookie,
                 ], $domain)
                 ->send($method, $path, $options);
 
-            // You might want more sophisticated error handling here
             if ($response->failed()) {
-                // Log the error, throw an exception, or return a specific error structure
                 Log::error("External API request failed for {$path}: " . $response->body(), [
                     'status' => $response->status(),
                     'response' => $response->json(),
                 ]);
-                return null;
+
+                throw new Exception("External API request failed for {$path}");
+
             }
+
+            $this->updateAuthCookieFromResponse($response);
 
             return $response;
 
@@ -148,6 +156,44 @@ class ExternalApiService
                 'exception' => $e,
             ]);
             return null;
+        }
+    }
+
+    /**
+     * Update the authentication cookie from the response.
+     *
+     * @param \Illuminate\Http\Client\Response $response
+     * @return void
+     */
+    private function updateAuthCookieFromResponse(Response $response): void
+    {
+        $authCookie = optional(
+            collect($response->cookies()->toArray())->firstWhere('Name', 'Authorization')
+        )['Value'] ?? null;
+
+        if ($authCookie) {
+            session(['external_auth_cookie' => $authCookie]);
+
+            $expiresCookie = optional(
+                collect($response->cookies()->toArray())->firstWhere('Name', 'Authorization')
+            )['Expires'] ?? null;
+
+            session(['external_auth_expires' => $expiresCookie]);
+        }
+    }
+
+    /**
+     * Validate the external authentication session.
+     *
+     * @return void
+     * @throws ExternalAuthSessionExpiredException
+     */
+    private function validateSession(): void
+    {
+        $expires = session('external_auth_expires');
+
+        if (!$expires || now()->timestamp > $expires) {
+            throw new ExternalAuthSessionExpiredException('External session has expired.');
         }
     }
 }

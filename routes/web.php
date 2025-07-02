@@ -17,11 +17,13 @@ Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(func
 
     // Show partner by id
     Route::get('partners/{partner}', [PartnersController::class, 'show'])
-        ->name('partner.show');
+        ->name('partner.show')
+        ->whereUuid('partner');
 
     // Show collection by id
     Route::get('collections/{collection}', [CollectionController::class, 'show'])
-        ->name('collection.show');
+        ->name('collection.show')
+        ->whereUuid('collection');
 
     Route::redirect('settings', 'settings/profile');
 

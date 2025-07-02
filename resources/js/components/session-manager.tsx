@@ -11,7 +11,8 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-const SESSION_LIFETIME_MINUTES = parseInt(import.meta.env.VITE_SESSION_LIFETIME || '120', 10); // Default to 120 minutes
+const SESSION_LIFETIME_MINUTES = parseInt(import.meta.env.VITE_SESSION_LIFETIME || '30', 10);
+
 const WARNING_THRESHOLD_MINUTES = 5; // Warn 5 minutes before expiration
 
 export function SessionManager() {
@@ -44,9 +45,16 @@ export function SessionManager() {
         resetTimers();
 
         const events = ['mousemove', 'keydown', 'click', 'scroll'];
+
         events.forEach(event => {
             window.addEventListener(event, resetTimers);
         });
+
+        // here what I need is a counter to the session expiration
+        // and a counter to the warning expiration
+        // so that I can show a warning dialog when the session is about to expire
+        // and allow the user to keep the session alive
+        // and also allow the user to logout
 
         return () => {
             if (sessionTimerRef.current) {

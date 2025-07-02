@@ -19,7 +19,7 @@ class PartnersController extends Controller
     public function index(): Response
     {
 
-        $partners = $this->externalApiService->getAll('partners', []);
+        $partners = $this->externalApiService->getPartners();
 
         // Convert the plain array of products to a Laravel Collection
         $partnersCollection = collect($partners);
@@ -30,7 +30,6 @@ class PartnersController extends Controller
 
     public function show(string $id): Response
     {
-        // Consider adding error handling for the API call
         $partner = $this->externalApiService->getPartnerById($id);
 
         // Return a single Resource
