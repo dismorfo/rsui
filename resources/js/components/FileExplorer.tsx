@@ -1,58 +1,78 @@
 import React, { useEffect, useState } from 'react';
-import { usePage } from '@inertiajs/react';
 import { Card, CardContent } from '@/components/ui/card';
 import { Input } from '@/components/ui/input';
 import { cn } from '@/lib/utils';
 import { Folder, File, ChevronRight, Search, Table, LayoutGrid } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Button } from '@/components/ui/button';
+import { Skeleton } from '@/components/ui/skeleton';
 
-interface Collection {
-  storage_url: string;
-}
+type FileExplorerProps = {
+  rootdir: string;
+};
 
-const FileExplorer = () => {
+const FileExplorer = (props: FileExplorerProps) => {
   const [currentData, setCurrentData] = useState(null);
   const [selected, setSelected] = useState(null);
   const [history, setHistory] = useState([]);
   const [filter, setFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('grid');
-
-  const { collection } = usePage<{
-    collection: Collection;
-  }>().props;
+  const [loading, setLoading] = useState(false);
+  const { rootdir } = props;
 
   useEffect(() => {
-    const rootUrl = collection.storage_url.replace('https://dev-rsbe.dlib.nyu.edu/api/v0/', '/fs/');
-    fetch(rootUrl)
+    setLoading(true);
+    const rootUrl = rootdir.replace('https://dev-rsbe.dlib.nyu.edu/api/v0/', '/fs/');
+    fetch('/fs/paths/742e9f1e-9a79-4f54-a7f3-11bc836e5807/7924e049-47a6-42cc-aaaf-50376713f3ed')
       .then(res => res.json())
-      .then(setCurrentData);
-  }, [collection.storage_url]);
+      .then(data => setCurrentData(data))
+      .finally(() => setLoading(false));
+  }, []);
 
   const handleClick = async (item) => {
     setSelected(item.name);
     if (item.object_type === 'directory') {
+      setLoading(true);
       const url = item.url.replace('https://dev-rsbe.dlib.nyu.edu/api/v0/', '/fs/');
       const res = await fetch(url);
       const data = await res.json();
       setHistory(prev => [...prev, currentData]);
       setCurrentData(data);
       setFilter('');
+      setLoading(false);
     }
   };
 
   const goToIndex = async (index) => {
+    setLoading(true);
     const newHistory = history.slice(0, index);
     const target = history[index];
-    setHistory(newHistory);
-    setCurrentData(target);
-    setSelected(null);
-    setFilter('');
+    setTimeout(() => {
+      setHistory(newHistory);
+      setCurrentData(target);
+      setSelected(null);
+      setFilter('');
+      setLoading(false);
+    }, 0);
   };
 
   const formatDate = (iso) => new Date(iso).toLocaleString();
 
-  if (!currentData) return <div className="p-4">Loading...</div>;
+  if (loading) {
+    return (
+      <div className="p-4 grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
+        {Array.from({ length: 8 }).map((_, i) => (
+          <Card key={i} className="p-4">
+            <Skeleton className="h-6 w-6 mb-2 mx-auto" />
+            <Skeleton className="h-4 w-24 mx-auto mb-1" />
+            <Skeleton className="h-3 w-20 mx-auto" />
+          </Card>
+        ))}
+      </div>
+    );
+  }
+
+  if (!currentData) return <div className="p-4 text-center text-gray-500">No data</div>;
 
   const filteredChildren = (currentData.children || []).filter(item =>
     item.name.toLowerCase().includes(filter.toLowerCase())

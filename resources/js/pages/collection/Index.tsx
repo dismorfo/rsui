@@ -11,7 +11,7 @@ export default function Partner() {
         collection: Collection;
     }>().props;
 
-    const { partner, storage } = collection
+    const { partner } = collection
 
     const breadcrumbs: BreadcrumbItem[] = [
         {
@@ -79,7 +79,7 @@ export default function Partner() {
 
                 <h5 className="scroll-m-20 text-l font-semibold tracking-tight">Perspectives</h5>
                 <div className="rounded-md border">
-                    <FileExplorer rootdir={storage} />
+                    <FileExplorer rootdir={collection.storage_url} />
                 </div>
             </div>
         </AppLayout>
