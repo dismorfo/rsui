@@ -23,11 +23,11 @@ const FileExplorer = (props: FileExplorerProps) => {
   useEffect(() => {
     setLoading(true);
     const rootUrl = rootdir.replace('https://dev-rsbe.dlib.nyu.edu/api/v0/', '/fs/');
-    fetch('/fs/paths/742e9f1e-9a79-4f54-a7f3-11bc836e5807/7924e049-47a6-42cc-aaaf-50376713f3ed')
+    fetch(rootUrl)
       .then(res => res.json())
       .then(data => setCurrentData(data))
       .finally(() => setLoading(false));
-  }, []);
+  }, [rootdir]);
 
   const handleClick = async (item) => {
     setSelected(item.name);
