@@ -3,11 +3,8 @@
 namespace App\Http\Controllers;
 
 use App\Services\ExternalApiService;
-use Illuminate\Support\Facades\Request;
 use Inertia\Inertia;
 use Inertia\Response;
-
-// use Illuminate\Support\Facades\Log;
 
 class CollectionController extends Controller
 {

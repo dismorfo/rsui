@@ -2,7 +2,7 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\CollectionController;
-use App\Http\Controllers\ImagesController;
+use App\Services\ExternalApiService;
 use App\Http\Controllers\WelcomeController;
 use App\Http\Controllers\PartnersController;
 use App\Http\Controllers\Settings\ProfileController;
@@ -24,6 +24,9 @@ Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(func
     Route::get('collections/{collection}', [CollectionController::class, 'show'])
         ->name('collection.show')
         ->whereUuid('collection');
+
+    // List files from path
+    Route::get('/fs/{path}', [ExternalApiService::class, 'getPath'])->where('path', '.*');
 
     Route::redirect('settings', 'settings/profile');
 
