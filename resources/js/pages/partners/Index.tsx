@@ -1,9 +1,9 @@
 import { usePage } from '@inertiajs/react';
-import { Partner } from '@/types';
-import { PartnersTable } from "@/components/data-table"
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
+import { type Partner } from '@/types';
 import { Head } from '@inertiajs/react';
+import { PartnersTable } from "@/components/PartnersTable"
 
 export default function Dashboard() {
 

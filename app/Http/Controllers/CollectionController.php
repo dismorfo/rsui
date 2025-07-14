@@ -20,12 +20,28 @@ class CollectionController extends Controller
         // Consider adding error handling for the API call
         $collection = $this->externalApiService->getCollectionById($id);
 
-        $partner = [];
+        $storage_path = '';
 
         // Return a single Resource
         return Inertia::render('collection/Index', [
-            'partner' => $partner,
             'collection' => $collection,
+            'storage_path' => $storage_path,
         ]);
     }
+
+    public function path(string $partner, string $collection, string $storage_path): Response
+    {
+        // Consider adding error handling for the API call
+        $collection = $this->externalApiService->getCollectionById($collection);
+
+         // Return a single Resource
+        return Inertia::render('collection/Index', [
+            'storage_path' => $storage_path,
+            'collection' => $collection,
+        ]);
+
+    }
+
 }
+
+

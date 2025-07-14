@@ -25,6 +25,9 @@ Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(func
         ->name('collection.show')
         ->whereUuid('collection');
 
+    // Show collection + files from path
+    Route::get('/paths/{partner}/{collection}/{path}', [CollectionController::class, 'path'])->where('path', '.*')->name('collections.path');
+
     // List files from path
     Route::get('/fs/{path}', [ExternalApiService::class, 'getPath'])->where('path', '.*');
 

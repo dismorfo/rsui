@@ -61,6 +61,7 @@ export interface Collection {
   owner_id: string;
   code: string;
   display_code: string;
+  path: string;
   name: string;
   coll_type: string;
   classification: string;
@@ -75,6 +76,7 @@ export interface Collection {
   lock_version: number;
   rel_path: string;
   partner: Partner;
+  storage_url: string;
 }
 
 export interface ViewerImage {
@@ -93,4 +95,32 @@ export interface CollectionTableProps {
 
 export interface PartnersTableProps {
   partners: Partner[];
+}
+
+export interface FileItem {
+    name: string;
+    object_type: 'file' | 'directory';
+    display_size: string;
+    size: number;
+    last_modified: string;
+    url: string;
+    download_url?: string;
+  children?: FileItem[];
+}
+export interface FileExplorerProps {
+  storage: string;
+  rootdir?: string; // Optional, used for initial directory
+}
+
+export interface FileExplorerState {
+  currentData: FileItem[] | null;
+  selected: string | null;
+  history: any[];
+  filter: string;
+  loading: boolean;
+}
+
+export interface Storage {
+  current: string;
+  root: string;
 }

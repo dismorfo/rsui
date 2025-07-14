@@ -76,10 +76,9 @@ export default function Partner() {
                         </tbody>
                     </table>
                 </div>
-
                 <h5 className="scroll-m-20 text-l font-semibold tracking-tight">Perspectives</h5>
                 <div className="rounded-md border">
-                    <FileExplorer rootdir={collection.storage_url} />
+                    <FileExplorer storage={collection.storage_url} />
                 </div>
             </div>
         </AppLayout>

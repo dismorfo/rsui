@@ -1,9 +1,9 @@
 import { usePage } from '@inertiajs/react';
 import type { BreadcrumbItem, Partner } from '@/types';
-import { PartnerCollectionsTable } from "@/components/data-table"
 import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { Separator } from '@radix-ui/react-separator';
+import { PartnerCollectionsTable } from "@/components/PartnerCollectionsTable"
 
 export default function Partner() {
 
@@ -13,7 +13,6 @@ export default function Partner() {
 
     const { collections } = partner;
 
-    // Define breadcrumbs AFTER 'partner' is available
     const breadcrumbs: BreadcrumbItem[] = [
         {
             title: 'Partners',

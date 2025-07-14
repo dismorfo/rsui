@@ -35,6 +35,7 @@ class ExternalApiService
     {
 
         $pathSegments = explode('/', $path);
+
         $cleanedSegments = [];
 
         foreach ($pathSegments as $segment) {
@@ -50,7 +51,20 @@ class ExternalApiService
 
         $response = $this->makeRequest('GET', $sanitizedPath);
 
-        return $response?->json();
+        $data = $response->json();
+
+        if (isset($data['children'])) {
+          foreach ($data['children'] as $index => $child) {
+            if (isset($data['children'][$index]['url'])) {
+              $data['children'][$index]['url'] = str_replace($this->endpoint, '/fs/', $data['children'][$index]['url']);
+            }
+            if (isset($data['children'][$index]['download_url'])) {
+              $data['children'][$index]['download_url'] = str_replace($this->endpoint, '/fs/', $data['children'][$index]['download_url']);
+            }
+          }
+        }
+
+        return $data;
     }
 
     /**
@@ -110,44 +124,19 @@ class ExternalApiService
 
             $data = $response?->json();
 
-            if (isset($data['storage_url'])) {
-
-                $storage_url = str_replace($this->endpoint, '', $data['storage_url']);
-
-                // https://dev-rsbe.dlib.nyu.edu/api/v0/
-                // paths/742e9f1e-9a79-4f54-a7f3-11bc836e5807/7924e049-47a6-42cc-aaaf-50376713f3ed
-                $storage = $this->makeRequest('GET', $storage_url);
-
-                $data['storage'] = $storage?->json();
-
-                $__storage['/' . $storage['name']] = [];
-
-                foreach ($data['storage']['children'] as $id => $leaf) {
-                  if ($leaf['object_type'] == 'directory') {
-                    $leaf_url = str_replace($this->endpoint, '', $leaf['url']);
-                    $leaf_storage = $this->makeRequest('GET', $leaf_url);
-                    $x = $leaf_storage?->json();
-                    $__storage['/' . $storage['name']][] = [
-                      'name' => $x['name'],
-                      'type' => $x['object_type'],
-                      'modified' => $x['last_modified'],
-                      'parent_url' => $x['parent_url'],
-                    ];
-                  }
-                }
-            }
-
             if (isset($data['partner_id'])) {
 
                 $partnerId = $data['partner_id'];
 
                 $partner = $this->makeRequest('GET', "partners/{$partnerId}");
 
-                $partnerDataata = $partner?->json();
+                $partnerData = $partner?->json();
 
-                $data['partner'] = $partnerDataata;
+                if (isset($data['storage_url'])) {
+                  $data['storage_url'] = str_replace($this->endpoint, '/fs/', $data['storage_url']);
+                }
 
-                $data['storage'] = $__storage;
+                $data['partner'] = $partnerData;
 
                 return $data;
 
