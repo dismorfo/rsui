@@ -4,6 +4,7 @@ namespace App\Services;
 
 use App\Exceptions\ExternalAuthSessionExpiredException;
 use Illuminate\Support\Facades\Http;
+use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 
@@ -52,7 +53,7 @@ class ExternalApiService
         $response = $this->makeRequest('GET', $sanitizedPath);
 
         $data = $response->json();
-
+        $data['url'] = "/fs/{$sanitizedPath}";
         if (isset($data['children'])) {
           foreach ($data['children'] as $index => $child) {
             if (isset($data['children'][$index]['url'])) {
@@ -178,6 +179,16 @@ class ExternalApiService
     protected function makeRequest(string $method, string $path, array $options = []): ?Response
     {
         try {
+
+            // $cacheKey = "external_api:{$path}:" . md5(json_encode($options));
+
+            // if ($useCache && Cache::has($cacheKey)) {
+            //     return Cache::get($cacheKey);
+            // }
+
+            // if ($useCache) {
+            //     Cache::put($cacheKey, $response, now()->addMinutes(10));
+            // }
 
             $this->validateSession();
 

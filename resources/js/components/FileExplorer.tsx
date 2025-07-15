@@ -6,7 +6,7 @@ import { Folder, File, ChevronRight, Search, Table, LayoutGrid } from 'lucide-re
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { FileItem, Storage } from '@/types';
+import type { FileItem, Storage } from '@/types'; // Ensure 'Storage' and 'FileItem' are correctly defined
 
 import {
   ContextMenu,
@@ -15,25 +15,45 @@ import {
   ContextMenuItem,
 } from '@/components/ui/context-menu';
 
-const FileExplorer = ({ storage }: { storage: Storage }) => {
+const FileExplorer = ({ storage }: { storage: Storage[] }) => {
+
   const [currentData, setCurrentData] = useState<FileItem | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
+  // history stores FileItem objects, which MUST have a 'url' for navigation
   const [history, setHistory] = useState<FileItem[]>([]);
   const [filter, setFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
-    fetchData(storage);
-    setHistory([]);
-    setSelected(null);
-    setFilter('');
+    if (storage && storage.length > 0) {
+      // The last item from the 'storage' prop is the initial current directory
+      const initialCurrentDirectory = storage[storage.length - 1];
+
+      // All items *before* the last one form the initial history.
+      // We need to ensure these items (from 'storage') are treated as FileItem and have a 'url'.
+      const initialHistoryItems: FileItem[] = storage.slice(0, storage.length - 1)
+        .filter((item): item is FileItem => !!(item as FileItem).url); // Filter out any history items without a URL
+
+      // Fetch data for the initial current directory. This item MUST have a URL.
+      fetchData(initialCurrentDirectory);
+      setHistory(initialHistoryItems);
+      setSelected(null);
+      setFilter('');
+    }
   }, [storage]);
 
-  const fetchData = async (storage: Storage) => {
+  // fetchData now explicitly expects an item with a URL, typically a FileItem or Storage
+  const fetchData = async (itemToFetch: { url: string }) => {
     setLoading(true);
     try {
-      const res = await fetch(storage.current);
+      // Defensive check: Ensure itemToFetch.url is always a string here
+      if (!itemToFetch.url) {
+        console.error("Error: Attempted to fetch data for an item with no URL:", itemToFetch);
+        // You might want to display a user-friendly error message here
+        return; // Prevent making a request with an undefined URL
+      }
+      const res = await fetch(itemToFetch.url);
       const data = await res.json();
       setCurrentData(data);
     } finally {
@@ -42,12 +62,28 @@ const FileExplorer = ({ storage }: { storage: Storage }) => {
   };
 
   const handleClick = async (item: FileItem) => {
+    console.log("Clicked item:", item);
     if (item.object_type === 'directory') {
       setLoading(true);
+      // Defensive check: A clicked directory MUST have a URL to navigate into it
+      if (!item.url) {
+        console.error("Error: Clicked directory has no URL:", item);
+        setLoading(false);
+        return;
+      }
       const res = await fetch(item.url);
       const data = await res.json();
+
       if (currentData) {
-        setHistory((prev) => [...prev, currentData as FileItem]);
+        console.log('data', data)
+        console.log('currentData', currentData)
+        // When pushing to history, ensure 'currentData' (which is a FileItem) has a URL.
+        // This is where the problematic object from your error might have entered history.
+        if (currentData.object_type === 'directory' && !currentData.url) {
+          console.warn("Warning: Attempting to add a directory to history without a URL:", currentData);
+          // You might choose to not add it to history, or to add a placeholder
+        }
+        setHistory((prev) => [...prev, currentData]);
       }
       setCurrentData(data);
       setFilter('');
@@ -60,10 +96,23 @@ const FileExplorer = ({ storage }: { storage: Storage }) => {
 
   const goToIndex = async (index: number) => {
     setLoading(true);
+    // The target item to navigate to is the one at the clicked index in the 'history' array
+    const targetItem: FileItem = history[index];
+
+    // Defensive check: Ensure the target history item is valid and has a URL
+    if (!targetItem || !targetItem.url) {
+        console.error("Error: Target history item has no URL or is null:", targetItem);
+        setLoading(false);
+        return;
+    }
+
+    // Slice history up to the clicked index to form the new history
     const newHistory = history.slice(0, index);
-    const target = history[index];
+
+    // Pass the target item to fetchData
+    await fetchData(targetItem); // fetchData now expects an item with a 'url'
+
     setHistory(newHistory);
-    setCurrentData(target);
     setSelected(null);
     setFilter('');
     setLoading(false);
@@ -108,19 +157,28 @@ const FileExplorer = ({ storage }: { storage: Storage }) => {
         <span className="font-semibold">Path:</span>
         {history.map((h, i) => (
           <span key={i} className="flex items-center">
-            <button
-              onClick={() => goToIndex(i)}
-              className="text-blue-500 underline hover:text-blue-700 truncate max-w-[120px]"
-              title={h.name}
-            >
-              {h.name}
-            </button>
+            {/* Only render button if the history item has a URL */}
+            {h.url ? (
+              <button
+                onClick={() => goToIndex(i)}
+                className="text-blue-500 underline hover:text-blue-700 truncate max-w-[120px]"
+                title={h.name}
+              >
+                {h.name}
+              </button>
+            ) : (
+              <span className="text-gray-700 truncate max-w-[120px]" title={`Unnavigable: ${h.name}`}>
+                {h.name}
+              </span>
+            )}
             <ChevronRight className="w-4 h-4 text-gray-400 mx-1" />
           </span>
         ))}
-        <span className="truncate max-w-[120px]" title={currentData.name}>
-          {currentData.name}
-        </span>
+        {currentData.name && (
+            <span className="truncate max-w-[120px]" title={currentData.name}>
+            {currentData.name}
+            </span>
+        )}
       </div>
       <div className="flex items-center justify-between mb-4 gap-4 flex-wrap">
         <div className="relative max-w-sm w-full">
@@ -229,8 +287,10 @@ const FileExplorer = ({ storage }: { storage: Storage }) => {
               <tr>
                 <th className="p-2 font-medium">Name</th>
                 <th className="p-2 font-medium">Type</th>
-                <th className="p-2 font-medium">Last Modified</th>
                 <th className="p-2 font-medium">Size</th>
+                <th className="p-2 font-medium">Preview</th>
+                <th className="p-2 font-medium">Download</th>
+                <th className="p-2 font-medium">Last Modified</th>
               </tr>
             </thead>
             <tbody className="divide-y divide-gray-200">
@@ -252,14 +312,37 @@ const FileExplorer = ({ storage }: { storage: Storage }) => {
                       >
                         <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
                         <td className="p-2">{item.object_type}</td>
-                        <td className="p-2">{formatDate(item.last_modified)}</td>
                         <td className="p-2">{item.display_size}</td>
+                        <td className="p-2">
+                            {item.url ? (
+                                <a href={item.url} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+                                    View
+                                </a>
+                            ) : (
+                                <span className="text-gray-400">N/A</span>
+                            )}
+                        </td>
+                        <td className="p-2">
+                          {isDownloadable(item) && item.download_url ? (
+                            <a href={item.download_url} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+                              Download
+                            </a>
+                          ) : (
+                            <span className="text-gray-400">N/A</span>
+                          )}
+                        </td>
+                        <td className="p-2">{formatDate(item.last_modified)}</td>
                       </tr>
                     </ContextMenuTrigger>
                     <ContextMenuContent>
                       {item.download_url && isDownloadable(item) && (
                         <ContextMenuItem onClick={() => window.open(item.download_url, '_blank')}>
-                          Download -
+                          Download
+                        </ContextMenuItem>
+                      )}
+                      {item.url && (
+                        <ContextMenuItem onClick={() => window.open(item.url, '_blank')}>
+                          Preview
                         </ContextMenuItem>
                       )}
                     </ContextMenuContent>
@@ -273,8 +356,10 @@ const FileExplorer = ({ storage }: { storage: Storage }) => {
                   >
                     <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
                     <td className="p-2">{item.object_type}</td>
-                    <td className="p-2">{formatDate(item.last_modified)}</td>
                     <td className="p-2"></td>
+                    <td className="p-2"></td>
+                    <td className="p-2"></td>
+                    <td className="p-2">{formatDate(item.last_modified)}</td>
                   </tr>
                 );
               })}

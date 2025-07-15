@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState, useCallback } from 'react';
 import { router } from '@inertiajs/react';
+import axios from 'axios';
 import {
     AlertDialog,
     AlertDialogAction,
@@ -71,9 +72,9 @@ export function SessionManager() {
 
     const handleKeepAlive = () => {
         // Make a small request to keep the session alive on the backend
-        // This could be a simple ping endpoint or any authenticated request
-        // For now, just reset client-side timers
-        resetTimers();
+        axios.post('/ping').then(() => {
+            resetTimers();
+        });
     };
 
     return (

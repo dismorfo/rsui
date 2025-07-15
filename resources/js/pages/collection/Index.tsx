@@ -7,8 +7,9 @@ import FileExplorer from "@/components/FileExplorer";
 
 export default function Partner() {
 
-    const { collection } = usePage<{
+    const { collection, storage_path } = usePage<{
         collection: Collection;
+        storage_path: string;
     }>().props;
 
     const { partner } = collection
@@ -27,6 +28,9 @@ export default function Partner() {
             href: `/collections/${collection.id}`,
         },
     ];
+
+
+    console.log('storage_path', storage_path);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>
@@ -78,7 +82,7 @@ export default function Partner() {
                 </div>
                 <h5 className="scroll-m-20 text-l font-semibold tracking-tight">Perspectives</h5>
                 <div className="rounded-md border">
-                    <FileExplorer storage={collection.storage_url} />
+                    <FileExplorer storage={storage_path} />
                 </div>
             </div>
         </AppLayout>

@@ -67,7 +67,7 @@ export function useAppearance() {
         updateAppearance(savedAppearance || 'system');
 
         return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
-    }, [updateAppearance]);
+    }, []);
 
     return { appearance, updateAppearance } as const;
 }

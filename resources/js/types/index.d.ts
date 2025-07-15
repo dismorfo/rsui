@@ -98,29 +98,33 @@ export interface PartnersTableProps {
 }
 
 export interface FileItem {
-    name: string;
-    object_type: 'file' | 'directory';
-    display_size: string;
-    size: number;
-    last_modified: string;
-    url: string;
-    download_url?: string;
+  name: string;
+  object_type: 'file' | 'directory';
+  display_size: string;
+  size: number;
+  last_modified: string;
+  url: string;
+  download_url?: string;
   children?: FileItem[];
+  path?: string;
 }
 export interface FileExplorerProps {
-  storage: string;
-  rootdir?: string; // Optional, used for initial directory
+  storage: Storage;
 }
 
 export interface FileExplorerState {
   currentData: FileItem[] | null;
   selected: string | null;
-  history: any[];
   filter: string;
   loading: boolean;
 }
 
 export interface Storage {
-  current: string;
-  root: string;
+  display_size: string;
+  name: string;
+  object_type: string;
+  url: string;
+  children?: FileItem[];
 }
+
+

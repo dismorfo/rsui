@@ -9,7 +9,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ExternalAuthController;
 
-Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(function () {
+Route::middleware(['auth', 'check.external.expiration'])->group(function () {
 
     // List partners
     Route::get('dashboard', [PartnersController::class, 'index'])
@@ -26,6 +26,8 @@ Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(func
         ->whereUuid('collection');
 
     // Show collection + files from path
+    Route::get('/paths/{partner}/{collection}', [CollectionController::class, 'path'])->name('collections.wihtoutpath');
+
     Route::get('/paths/{partner}/{collection}/{path}', [CollectionController::class, 'path'])->where('path', '.*')->name('collections.path');
 
     // List files from path
@@ -38,6 +40,10 @@ Route::middleware(['auth', 'verified', 'check.external.expiration'])->group(func
 
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
+
+    Route::post('ping', function () {
+        return response()->json(['message' => 'pong']);
+    })->name('ping');
 
 });
 
