@@ -176,23 +176,31 @@ class ExternalApiService
      * @param array $options Additional Guzzle request options.
      * @return \Illuminate\Http\Client\Response|null The Laravel HTTP client response, or null on error.
      */
-    protected function makeRequest(string $method, string $path, array $options = []): ?Response
+    protected function makeRequest(string $method, string $path, array $options = [], bool $useCache = true, int $cacheMinutes = 10): ?Response
     {
         try {
 
-            // $cacheKey = "external_api:{$path}:" . md5(json_encode($options));
+            $this->validateSession();
+
+            // Generate a cache key that is unique to the user and the request
+            // We'll use the session ID to tie the cache to the user's session.
+            // Also include method, path, and a hash of options to ensure unique requests have unique cache keys.
+            $sessionId = session()->getId();
+
+            $cacheKey = "external_api:user_{$sessionId}:{$method}:{$path}:" . md5(json_encode($options));
 
             // if ($useCache && Cache::has($cacheKey)) {
+            //     // Return cached response if it exists and caching is enabled
             //     return Cache::get($cacheKey);
             // }
 
-            // if ($useCache) {
-            //     Cache::put($cacheKey, $response, now()->addMinutes(10));
-            // }
-
-            $this->validateSession();
-
             $cookie = session('external_auth_cookie');
+
+            if (!$cookie) {
+                // Throw an exception indicating an authentication issue
+                // @TODO: Xreate a custom exception like AuthenticationException
+                throw new Exception("External authentication cookie not found in session.");
+            }
 
             $domain = parse_url($this->endpoint, PHP_URL_HOST);
 
@@ -213,6 +221,11 @@ class ExternalApiService
             }
 
             $this->updateAuthCookieFromResponse($response);
+
+            if ($useCache) {
+                // Cache the response if caching is enabled
+                Cache::put($cacheKey, $response, now()->addMinutes($cacheMinutes));
+            }
 
             return $response;
 
