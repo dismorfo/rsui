@@ -7,6 +7,9 @@ use Illuminate\Support\Facades\Http;
 use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
+use Symfony\Component\HttpFoundation\StreamedResponse;
+use Illuminate\Support\Facades\Storage;
+use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use Exception;
 
@@ -19,12 +22,71 @@ class ExternalApiService
         $this->endpoint = config('services.rs.v1.endpoint');
     }
 
+
     /**
-     * Get files information from the external API.
+     * Streams a file from the external API using authentication.
      *
-     * @param string $endpoint The API endpoint (e.g., 'products', 'users')
-     * @return array|null The API response data, or null on failure.
+     * @param string $path The API path to the file (relative to base URL).
+     * @param array $headers Optional headers to include in the request.
+     * @return StreamedResponse The streamed file download response.
+     *
+     * @throws \Exception If authentication or the request fails.
      */
+
+
+    /**
+     * Downloads a remote file and returns it as a local download response.
+     *
+     * @param string $path Remote API file path (relative).
+     * @return BinaryFileResponse
+     *
+     * @throws \Exception If the download fails.
+     */
+
+    /**
+     * Downloads a remote file and returns it as a local download response.
+     *
+     * @param string $path Remote API file path (relative URL, may include query string).
+     * @return BinaryFileResponse
+     *
+     * @throws Exception If the download fails or authentication is missing.
+     */
+    public function downloadFile(string $path): BinaryFileResponse
+    {
+        $this->validateSession();
+
+        $cookie = session('external_auth_cookie');
+        if (!$cookie) {
+            throw new Exception("External auth cookie not found.");
+        }
+
+        $domain = parse_url($this->endpoint, PHP_URL_HOST);
+
+        $remoteResponse = Http::baseUrl($this->endpoint)
+            ->withCookies(['Authorization' => $cookie], $domain)
+            ->withOptions(['stream' => true])
+            ->get("{$path}?download=true");
+
+        if ($remoteResponse->failed()) {
+            Log::error("Download failed", ['status' => $remoteResponse->status()]);
+            throw new Exception("Remote download failed");
+        }
+
+        // Extract filename safely from URL path (ignoring query string)
+        $basename = parse_url($path, PHP_URL_PATH);
+
+        $filename = basename($basename) ?: 'file.txt';
+
+        // Ensure the temp directory exists
+        Storage::makeDirectory('temp');
+
+        $tempPath = storage_path("app/temp/{$filename}");
+
+        file_put_contents($tempPath, $remoteResponse->body());
+
+        // Return the download response and delete file after sending
+        return response()->download($tempPath)->deleteFileAfterSend(true);
+    }
 
     /**
      * Get all resources from the external API.
@@ -60,7 +122,7 @@ class ExternalApiService
               $data['children'][$index]['url'] = str_replace($this->endpoint, '/fs/', $data['children'][$index]['url']);
             }
             if (isset($data['children'][$index]['download_url'])) {
-              $data['children'][$index]['download_url'] = str_replace($this->endpoint, '/fs/', $data['children'][$index]['download_url']);
+              $data['children'][$index]['download_url'] = str_replace($this->endpoint, '/download/', $data['children'][$index]['download_url']);
             }
           }
         }
@@ -198,7 +260,7 @@ class ExternalApiService
 
             if (!$cookie) {
                 // Throw an exception indicating an authentication issue
-                // @TODO: Xreate a custom exception like AuthenticationException
+                // @TODO: Create a custom exception like AuthenticationException
                 throw new Exception("External authentication cookie not found in session.");
             }
 

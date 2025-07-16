@@ -214,7 +214,7 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
       </div>
 
       {filteredChildren.length === 0 ? (
-        <div className="text-center text-gray-400 py-10">No matching files or folders.</div>
+        <div className="text-center text-gray-400 py-10">Empty directory.</div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredChildren.map((item: FileItem) => (
