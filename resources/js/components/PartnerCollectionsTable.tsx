@@ -54,8 +54,8 @@ function DebouncedInput({
       onChange(value)
     }, debounce)
 
-    return () => clearTimeout(timeout) // eslint-disable-line react-hooks/exhaustive-deps
-  }, [value])
+    return () => clearTimeout(timeout)
+  }, [value, onChange, debounce])
 
   return (
     <input {...props} value={value} onChange={e => setValue(e.target.value)} />
@@ -68,7 +68,7 @@ export function PartnerCollectionsTable({ collections }: CollectionTableProps) {
 
   const [ globalFilter, setGlobalFilter ] = React.useState('')
 
-  const columns = React.useMemo<ColumnDef<Collection[], any>[]>(
+  const columns = React.useMemo<ColumnDef<Collection>[]>(
     () => [
       {
         accessorKey: 'name',

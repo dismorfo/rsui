@@ -144,7 +144,7 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
   }
 
   if (!currentData) {
-    return <div className="p-4 text-center text-gray-500">No data</div>;
+    return <div className="p-4 text-center text-muted-foreground">No data</div>;
   }
 
   const filteredChildren = (currentData.children || []).filter((item: FileItem) =>
@@ -153,7 +153,7 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
 
   return (
     <div className="p-4">
-      <div className="mb-2 text-sm text-gray-500 flex flex-wrap items-center gap-1">
+      <div className="mb-2 text-sm text-muted-foreground flex flex-wrap items-center gap-1">
         <span className="font-semibold">Path:</span>
         {history.map((h, i) => (
           <span key={i} className="flex items-center">
@@ -161,17 +161,17 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
             {h.url ? (
               <button
                 onClick={() => goToIndex(i)}
-                className="text-blue-500 underline hover:text-blue-700 truncate max-w-[120px]"
+                className="text-primary underline hover:text-primary/80 truncate max-w-[120px]"
                 title={h.name}
               >
                 {h.name}
               </button>
             ) : (
-              <span className="text-gray-700 truncate max-w-[120px]" title={`Unnavigable: ${h.name}`}>
+              <span className="text-muted-foreground truncate max-w-[120px]" title={`Unnavigable: ${h.name}`}>
                 {h.name}
               </span>
             )}
-            <ChevronRight className="w-4 h-4 text-gray-400 mx-1" />
+            <ChevronRight className="w-4 h-4 text-muted-foreground/50 mx-1" />
           </span>
         ))}
         {currentData.name && (
@@ -214,7 +214,7 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
       </div>
 
       {filteredChildren.length === 0 ? (
-        <div className="text-center text-gray-400 py-10">Empty directory.</div>
+        <div className="text-center text-muted-foreground py-10">Empty directory.</div>
       ) : viewMode === 'grid' ? (
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredChildren.map((item: FileItem) => (
@@ -228,7 +228,7 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
                           onClick={() => handleClick(item)}
                           className={cn(
                             'cursor-pointer hover:bg-accent hover:text-accent-foreground transition',
-                            selected === item.name && 'ring ring-blue-400'
+                            selected === item.name && 'ring ring-primary'
                           )}
                         >
                           <CardContent className="p-4 flex flex-col items-center text-center">
@@ -240,11 +240,11 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
                             <div className="text-sm font-medium truncate w-full" title={item.name}>
                               {item.name}
                             </div>
-                            <div className="text-xs text-gray-500 mt-1">
+                            <div className="text-xs text-muted-foreground mt-1">
                               {formatDate(item.last_modified)}
                             </div>
                             {item.object_type === 'file' && item.display_size && (
-                              <div className="text-xs text-gray-500">{item.display_size}</div>
+                              <div className="text-xs text-muted-foreground">{item.display_size}</div>
                             )}
                           </CardContent>
                         </Card>
@@ -293,13 +293,13 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
                 <th className="p-2 font-medium">Last Modified</th>
               </tr>
             </thead>
-            <tbody className="divide-y divide-gray-200">
+            <tbody className="divide-y divide-border">
               {filteredChildren.map((item: FileItem, index: number) => {
                 const isEven = index % 2 === 0;
                 const rowClasses = cn(
-                  isEven ? 'bg-white' : 'bg-gray-50',
+                  isEven ? 'bg-background' : 'bg-muted/50',
                   'hover:bg-accent cursor-pointer',
-                  selected === item.name && 'ring ring-blue-400'
+                  selected === item.name && 'ring ring-primary'
                 );
 
                 return item.object_type === 'file' ? (
@@ -315,20 +315,20 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
                         <td className="p-2">{item.display_size}</td>
                         <td className="p-2">
                             {item.url ? (
-                                <a href={item.url} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+                                <a href={item.url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                                     View
                                 </a>
                             ) : (
-                                <span className="text-gray-400">N/A</span>
+                                <span className="text-muted-foreground/50">N/A</span>
                             )}
                         </td>
                         <td className="p-2">
                           {isDownloadable(item) && item.download_url ? (
-                            <a href={item.download_url} className="text-blue-500 hover:underline" target="_blank" rel="noopener noreferrer">
+                            <a href={item.download_url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                               Download
                             </a>
                           ) : (
-                            <span className="text-gray-400">N/A</span>
+                            <span className="text-muted-foreground/50">N/A</span>
                           )}
                         </td>
                         <td className="p-2">{formatDate(item.last_modified)}</td>

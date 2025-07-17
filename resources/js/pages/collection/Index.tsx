@@ -1,5 +1,5 @@
 import { usePage } from '@inertiajs/react';
-import type { Collection, Partner } from '@/types';
+import type { Collection, Partner, FileItem } from '@/types';
 import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
@@ -9,7 +9,7 @@ export default function Partner() {
 
     const { collection, storage_path } = usePage<{
         collection: Collection;
-        storage_path: string;
+        storage_path: FileItem[];
     }>().props;
 
     const { partner } = collection
@@ -28,9 +28,6 @@ export default function Partner() {
             href: `/collections/${collection.id}`,
         },
     ];
-
-
-    console.log('storage_path', storage_path);
 
     return (
         <AppLayout breadcrumbs={breadcrumbs}>

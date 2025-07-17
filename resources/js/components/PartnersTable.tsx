@@ -54,7 +54,7 @@ function DebouncedInput({
       onChange(value)
     }, debounce)
 
-    return () => clearTimeout(timeout) // eslint-disable-line react-hooks/exhaustive-deps
+    return () => clearTimeout(timeout)  
   }, [value, debounce, onChange])
 
   return (

@@ -12,6 +12,7 @@ type LoginForm = {
     email: string;
     password: string;
     remember: boolean;
+    errors?: any;
 };
 
 interface LoginProps {
@@ -25,6 +26,7 @@ export default function Login({ status, canResetPassword }: LoginProps) {
         email: '',
         password: '',
         remember: false,
+        errors: {},
     });
 
     const submit: FormEventHandler = (e) => {
