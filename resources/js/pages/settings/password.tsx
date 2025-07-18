@@ -22,7 +22,6 @@ export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
-
     // {
     //     "username": "Admin User",
     //     "current_password":"..."
