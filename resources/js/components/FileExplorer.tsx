@@ -299,11 +299,11 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                         Download
                       </ContextMenuItem>
                     )}
-                    {item.url && (
+                    {/* {item.url && (
                       <ContextMenuItem onClick={() => window.open(item.url, '_blank')}>
                         Preview
                       </ContextMenuItem>
-                    )}
+                    )} */}
                   </ContextMenuContent>
                 )}
               </ContextMenu>
@@ -381,11 +381,11 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                           Download
                         </ContextMenuItem>
                       )}
-                      {item.url && (
+                      {/* {item.url && (
                         <ContextMenuItem onClick={() => window.open(item.url, '_blank')}>
                           Preview
                         </ContextMenuItem>
-                      )}
+                      )} */}
                     </ContextMenuContent>
                   </ContextMenu>
                 ) : (
