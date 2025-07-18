@@ -56,7 +56,7 @@ export default function Partner() {
                             </tr>
                             <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
                                 <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Collection Code</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.code}</td>
+                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.display_code}</td>
                             </tr>
                             <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
                                 <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Collection R* Code</td>
@@ -79,7 +79,7 @@ export default function Partner() {
                 </div>
                 <h5 className="scroll-m-20 text-l font-semibold tracking-tight">Perspectives</h5>
                 <div className="rounded-md border">
-                    <FileExplorer storage={storage_path} />
+                    <FileExplorer storage={storage_path} partnerId={String(partner.id)} collectionId={String(collection.id)} />
                 </div>
             </div>
         </AppLayout>

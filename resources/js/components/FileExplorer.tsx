@@ -6,7 +6,7 @@ import { Folder, File, ChevronRight, Search, Table, LayoutGrid } from 'lucide-re
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
-import type { FileItem, Storage } from '@/types'; // Ensure 'Storage' and 'FileItem' are correctly defined
+import type { FileItem, Storage } from '@/types';
 
 import {
   ContextMenu,
@@ -15,11 +15,10 @@ import {
   ContextMenuItem,
 } from '@/components/ui/context-menu';
 
-const FileExplorer = ({ storage }: { storage: Storage[] }) => {
+const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[], partnerId: string, collectionId: string }) => {
 
   const [currentData, setCurrentData] = useState<FileItem | null>(null);
   const [selected, setSelected] = useState<string | null>(null);
-  // history stores FileItem objects, which MUST have a 'url' for navigation
   const [history, setHistory] = useState<FileItem[]>([]);
   const [filter, setFilter] = useState('');
   const [viewMode, setViewMode] = useState<'grid' | 'table'>('table');
@@ -43,14 +42,46 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
     }
   }, [storage]);
 
-  // fetchData now explicitly expects an item with a URL, typically a FileItem or Storage
+  useEffect(() => {
+    const handlePopState = (event: PopStateEvent) => {
+      if (event.state) {
+        setHistory(event.state.history);
+        setCurrentData(event.state.currentData);
+      }
+    };
+
+    window.addEventListener('popstate', handlePopState);
+    return () => {
+      window.removeEventListener('popstate', handlePopState);
+    };
+  }, []);
+
+  useEffect(() => {
+    if (currentData && currentData.url) {
+      const baseUrlPart = `/fs/paths/${partnerId}/${collectionId}`;
+      let newPath = '';
+
+      if (currentData.url === baseUrlPart) {
+        // This is the collection root
+        newPath = `/collections/${collectionId}`;
+      } else if (currentData.url.startsWith(baseUrlPart + '/')) {
+        // This is a sub-path
+        const pathSegments = currentData.url.substring(baseUrlPart.length + 1);
+        newPath = `/paths/${partnerId}/${collectionId}/${pathSegments}`;
+      } else {
+        // Fallback to collection root if URL structure is unexpected
+        newPath = `/collections/${collectionId}`;
+      }
+      window.history.pushState({ history, currentData }, '', newPath);
+    }
+  }, [currentData, history, partnerId, collectionId, storage]);
+
   const fetchData = async (itemToFetch: { url: string }) => {
     setLoading(true);
     try {
       // Defensive check: Ensure itemToFetch.url is always a string here
       if (!itemToFetch.url) {
         console.error("Error: Attempted to fetch data for an item with no URL:", itemToFetch);
-        // You might want to display a user-friendly error message here
         return; // Prevent making a request with an undefined URL
       }
       const res = await fetch(itemToFetch.url);
@@ -81,7 +112,6 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
         // This is where the problematic object from your error might have entered history.
         if (currentData.object_type === 'directory' && !currentData.url) {
           console.warn("Warning: Attempting to add a directory to history without a URL:", currentData);
-          // You might choose to not add it to history, or to add a placeholder
         }
         setHistory((prev) => [...prev, currentData]);
       }
@@ -110,7 +140,7 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
     const newHistory = history.slice(0, index);
 
     // Pass the target item to fetchData
-    await fetchData(targetItem); // fetchData now expects an item with a 'url'
+    await fetchData(targetItem); // fetchData expects an item with a 'url'
 
     setHistory(newHistory);
     setSelected(null);
@@ -314,13 +344,19 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
                         <td className="p-2">{item.object_type}</td>
                         <td className="p-2">{item.display_size}</td>
                         <td className="p-2">
-                            {item.url ? (
+                            {/* {item.url ? (
                                 <a href={item.url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
                                     View
                                 </a>
                             ) : (
                                 <span className="text-muted-foreground/50">N/A</span>
-                            )}
+                            )} */}
+                            <HoverCard>
+                              <HoverCardTrigger><span className="text-muted-foreground/50">Not available</span></HoverCardTrigger>
+                              <HoverCardContent>
+                                <span>Unavailable at the moment — please check back soon.</span>
+                              </HoverCardContent>
+                            </HoverCard>
                         </td>
                         <td className="p-2">
                           {isDownloadable(item) && item.download_url ? (
@@ -328,7 +364,12 @@ const FileExplorer = ({ storage }: { storage: Storage[] }) => {
                               Download
                             </a>
                           ) : (
-                            <span className="text-muted-foreground/50">N/A</span>
+                            <HoverCard>
+                              <HoverCardTrigger><span className="text-muted-foreground/50">N/A</span></HoverCardTrigger>
+                              <HoverCardContent>
+                                <span>Download for files over 2GB of size is not currently supported.</span>
+                              </HoverCardContent>
+                            </HoverCard>
                           )}
                         </td>
                         <td className="p-2">{formatDate(item.last_modified)}</td>

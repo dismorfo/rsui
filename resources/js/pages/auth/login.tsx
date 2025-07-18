@@ -12,7 +12,7 @@ type LoginForm = {
     email: string;
     password: string;
     remember: boolean;
-    errors?: any;
+    errors?: Record<string, string>;
 };
 
 interface LoginProps {
