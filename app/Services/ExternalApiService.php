@@ -8,8 +8,6 @@ use Illuminate\Support\Facades\Cache;
 use Illuminate\Http\Client\Response;
 use Illuminate\Support\Facades\Log;
 use Symfony\Component\HttpFoundation\StreamedResponse;
-use Illuminate\Support\Facades\Storage;
-use Symfony\Component\HttpFoundation\BinaryFileResponse;
 
 use Exception;
 
@@ -22,70 +20,105 @@ class ExternalApiService
         $this->endpoint = config('services.rs.v1.endpoint');
     }
 
-
-    /**
-     * Streams a file from the external API using authentication.
-     *
-     * @param string $path The API path to the file (relative to base URL).
-     * @param array $headers Optional headers to include in the request.
-     * @return StreamedResponse The streamed file download response.
-     *
-     * @throws \Exception If authentication or the request fails.
-     */
-
-
-    /**
-     * Downloads a remote file and returns it as a local download response.
-     *
-     * @param string $path Remote API file path (relative).
-     * @return BinaryFileResponse
-     *
-     * @throws \Exception If the download fails.
-     */
-
-    /**
-     * Downloads a remote file and returns it as a local download response.
-     *
-     * @param string $path Remote API file path (relative URL, may include query string).
-     * @return BinaryFileResponse
-     *
-     * @throws Exception If the download fails or authentication is missing.
-     */
-    public function downloadFile(string $path): BinaryFileResponse
+   /**
+    * Downloads a file from an external service and streams it directly to the client's browser.
+    *
+    * This function retrieves a file from a specified external path, authenticating
+    * with an 'external_auth_cookie' stored in the session. It constructs the full URL,
+    * sends a streamed GET request to the external service, and then pipes the
+    * received stream directly to the browser as a download. The filename for the
+    * download is derived from the provided $path.
+    *
+    * @param string $path The relative or absolute path to the file on the external service.
+    * If relative, it will be prefixed with the controller's endpoint.
+    * @return \Symfony\Component\HttpFoundation\StreamedResponse A streamed response that
+    * sends the file content to the client.
+    * @throws \Exception If the external authentication cookie is not found,
+    * if the URL is invalid, or if the file download from the
+    * external service fails.
+    */
+    public function downloadFile(string $path): StreamedResponse
     {
-        $this->validateSession();
+        try {
+            $this->validateSession();
 
-        $cookie = session('external_auth_cookie');
-        if (!$cookie) {
-            throw new Exception("External auth cookie not found.");
+            $cookie = session('external_auth_cookie');
+            if (!$cookie) {
+                throw new \Exception("External authentication cookie not found in session.");
+            }
+
+            if (!str_starts_with($path, 'http://') && !str_starts_with($path, 'https://')) {
+                $path = rtrim($this->endpoint, '/') . '/' . ltrim($path, '/');
+            }
+
+            $domain = parse_url($path, PHP_URL_HOST);
+            if (!$domain) {
+                throw new \Exception("Invalid URL: no host detected.");
+            }
+
+            $externalRequestUrl = "{$path}?download=true";
+
+            $filename = basename(parse_url($path, PHP_URL_PATH));
+            if (empty($filename) || $filename === '/') {
+                $filename = 'downloaded_file'; // Fallback if no filename can be extracted
+            }
+
+            $ch = curl_init();
+            curl_setopt($ch, CURLOPT_URL, $externalRequestUrl);
+            curl_setopt($ch, CURLOPT_RETURNTRANSFER, false);
+            curl_setopt($ch, CURLOPT_HEADER, false);
+            curl_setopt($ch, CURLOPT_FOLLOWLOCATION, true);
+            curl_setopt($ch, CURLOPT_CONNECTTIMEOUT, 10);
+            curl_setopt($ch, CURLOPT_TIMEOUT, 3600);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYPEER, true);
+            curl_setopt($ch, CURLOPT_SSL_VERIFYHOST, 2);
+
+            $requestHeaders = [
+                'Accept-Encoding: gzip, deflate, br',
+                'Connection: keep-alive',
+                'User-Agent: RSUI/1.0 (dlts@nyu.edu)',
+                'Accept: */*',
+                "Cookie: Authorization={$cookie}",
+            ];
+
+            curl_setopt($ch, CURLOPT_HTTPHEADER, $requestHeaders);
+
+            $responseHeaders = [];
+
+            curl_setopt($ch, CURLOPT_HEADERFUNCTION, function($curl, $header) use (&$responseHeaders) {
+                $len = strlen($header);
+                $parts = explode(':', $header, 2);
+                if (count($parts) < 2) {
+                    return $len;
+                }
+                $responseHeaders[strtolower(trim($parts[0]))][] = trim($parts[1]);
+                return $len;
+            });
+
+            // Pass the derived filename to the StreamedResponse
+            return new StreamedResponse(function () use ($ch) {
+                curl_exec($ch);
+                if (curl_errno($ch)) {
+                    Log::error("cURL error during streaming: " . curl_error($ch));
+                }
+                curl_close($ch);
+            }, 200, [
+                'Content-Type' => $responseHeaders['content-type'][0] ?? 'application/octet-stream',
+                'Content-Disposition' => 'attachment; filename="' . $filename . '"',
+                'Content-Length' => $responseHeaders['content-length'][0] ?? null,
+                'Cache-Control' => 'no-store, no-cache, must-revalidate, max-age=0',
+                'Pragma' => 'no-cache',
+                'Expires' => '0',
+            ]);
+
+        } catch (\Exception $e) {
+            Log::error("File download error: " . $e->getMessage(), ['exception' => $e]);
+            return new StreamedResponse(function () use ($e) {
+                echo "Error downloading file: " . $e->getMessage();
+            }, 500, [
+                'Content-Type' => 'text/plain',
+            ]);
         }
-
-        $domain = parse_url($this->endpoint, PHP_URL_HOST);
-
-        $remoteResponse = Http::baseUrl($this->endpoint)
-            ->withCookies(['Authorization' => $cookie], $domain)
-            ->withOptions(['stream' => true])
-            ->get("{$path}?download=true");
-
-        if ($remoteResponse->failed()) {
-            Log::error("Download failed", ['status' => $remoteResponse->status()]);
-            throw new Exception("Remote download failed");
-        }
-
-        // Extract filename safely from URL path (ignoring query string)
-        $basename = parse_url($path, PHP_URL_PATH);
-
-        $filename = basename($basename) ?: 'file.txt';
-
-        // Ensure the temp directory exists
-        Storage::makeDirectory('temp');
-
-        $tempPath = storage_path("app/temp/{$filename}");
-
-        file_put_contents($tempPath, $remoteResponse->body());
-
-        // Return the download response and delete file after sending
-        return response()->download($tempPath)->deleteFileAfterSend(true);
     }
 
     /**
@@ -270,6 +303,10 @@ class ExternalApiService
                 ->withCookies([
                     'Authorization' => $cookie,
                 ], $domain)
+                ->withHeaders([
+                    'User-Agent' => 'RSUI/1.0 (dlts@nyu.edu)',
+                    'Accept' => 'application/json',
+                ])
                 ->send($method, $path, $options);
 
             if ($response->failed()) {
