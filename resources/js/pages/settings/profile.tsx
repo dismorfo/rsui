@@ -25,10 +25,12 @@ type ProfileForm = {
 export default function Profile() {
     const { auth } = usePage<SharedData>().props;
 
-    const { data, setData, patch, errors, processing, recentlySuccessful } = useForm<Required<ProfileForm>>({
+    const { data, setData, patch, errors, processing,  recentlySuccessful } = useForm<Required<ProfileForm>>({
         name: auth.user.name,
         email: auth.user.email,
     });
+
+    console.log(processing);
 
     const submit: FormEventHandler = (e) => {
         e.preventDefault();

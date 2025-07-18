@@ -35,6 +35,8 @@ export default function Password() {
         password_confirmation: '',
     });
 
+    console.log(processing);
+
     const updatePassword: FormEventHandler = (e) => {
         e.preventDefault();
 

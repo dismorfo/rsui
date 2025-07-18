@@ -28,6 +28,8 @@ export default function ResetPassword({ token, email }: ResetPasswordProps) {
         password_confirmation: '',
     });
 
+   console.log(processing);
+
     const submit: FormEventHandler = (e) => {
         e.preventDefault();
         post(route('password.store'), {

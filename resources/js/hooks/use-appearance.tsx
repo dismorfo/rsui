@@ -2,6 +2,11 @@ import { useCallback, useEffect, useState } from 'react';
 
 export type Appearance = 'light' | 'dark' | 'system';
 
+export interface AppearanceSettings {
+    theme: Appearance;
+    collectionDetailsCollapsed: boolean;
+}
+
 const prefersDark = () => {
     if (typeof window === 'undefined') {
         return false;
@@ -33,41 +38,70 @@ const mediaQuery = () => {
     return window.matchMedia('(prefers-color-scheme: dark)');
 };
 
+const getAppearanceSettings = (): AppearanceSettings => {
+    if (typeof window === 'undefined') {
+        return { theme: 'system', collectionDetailsCollapsed: true };
+    }
+    const savedSettings = localStorage.getItem('appearance_settings');
+    if (savedSettings) {
+        try {
+            const parsed = JSON.parse(savedSettings);
+            return {
+                theme: parsed.theme || 'system',
+                collectionDetailsCollapsed: typeof parsed.collectionDetailsCollapsed === 'boolean' ? parsed.collectionDetailsCollapsed : true,
+            };
+        } catch (e) {
+            console.error("Failed to parse appearance settings from localStorage", e);
+            return { theme: 'system', collectionDetailsCollapsed: true };
+        }
+    }
+    return { theme: 'system', collectionDetailsCollapsed: true };
+}
+
 const handleSystemThemeChange = () => {
-    const currentAppearance = localStorage.getItem('appearance') as Appearance;
-    applyTheme(currentAppearance || 'system');
+    const settings = getAppearanceSettings();
+    applyTheme(settings.theme || 'system');
 };
 
 export function initializeTheme() {
-    const savedAppearance = (localStorage.getItem('appearance') as Appearance) || 'system';
-
-    applyTheme(savedAppearance);
-
-    // Add the event listener for system theme changes...
+    const settings = getAppearanceSettings();
+    applyTheme(settings.theme);
     mediaQuery()?.addEventListener('change', handleSystemThemeChange);
 }
 
 export function useAppearance() {
-    const [appearance, setAppearance] = useState<Appearance>('system');
+    const [settings, setSettings] = useState<AppearanceSettings>({ theme: 'system', collectionDetailsCollapsed: true });
 
-    const updateAppearance = useCallback((mode: Appearance) => {
-        setAppearance(mode);
+    const updateAppearance = useCallback((theme: Appearance) => {
+        setSettings(prev => {
+            const newSettings = { ...prev, theme };
+            localStorage.setItem('appearance_settings', JSON.stringify(newSettings));
+            setCookie('appearance', theme); // for SSR
+            applyTheme(theme);
+            return newSettings;
+        });
+    }, []);
 
-        // Store in localStorage for client-side persistence...
-        localStorage.setItem('appearance', mode);
-
-        // Store in cookie for SSR...
-        setCookie('appearance', mode);
-
-        applyTheme(mode);
+    const updateCollectionDetailsCollapsed = useCallback((collapsed: boolean) => {
+        setSettings(prev => {
+            const newSettings = { ...prev, collectionDetailsCollapsed: collapsed };
+            localStorage.setItem('appearance_settings', JSON.stringify(newSettings));
+            return newSettings;
+        });
     }, []);
 
     useEffect(() => {
-        const savedAppearance = localStorage.getItem('appearance') as Appearance | null;
-        updateAppearance(savedAppearance || 'system');
+        const savedSettings = getAppearanceSettings();
+        setSettings(savedSettings);
+        applyTheme(savedSettings.theme);
 
         return () => mediaQuery()?.removeEventListener('change', handleSystemThemeChange);
-    }, [updateAppearance]);
+    }, []);
 
-    return { appearance, updateAppearance } as const;
+    return {
+        appearance: settings.theme,
+        collectionDetailsCollapsed: settings.collectionDetailsCollapsed,
+        updateAppearance,
+        updateCollectionDetailsCollapsed,
+    } as const;
 }
