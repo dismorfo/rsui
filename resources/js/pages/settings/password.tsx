@@ -22,6 +22,14 @@ export default function Password() {
     const passwordInput = useRef<HTMLInputElement>(null);
     const currentPasswordInput = useRef<HTMLInputElement>(null);
 
+
+    // {
+    //     "username": "Admin User",
+    //     "current_password":"..."
+    //     "password": "....",
+    //     "password_confirmation": "...",
+    // }
+
     const { data, setData, errors, put, reset, processing, recentlySuccessful } = useForm({
         current_password: '',
         password: '',
@@ -108,7 +116,8 @@ export default function Password() {
                         </div>
 
                         <div className="flex items-center gap-4">
-                            <Button disabled={processing}>Save password</Button>
+                            {/* <Button disabled={processing}>Save password</Button> */}
+                            <Button disabled={true}>Save password</Button>
 
                             <Transition
                                 show={recentlySuccessful}
