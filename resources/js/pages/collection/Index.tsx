@@ -4,6 +4,12 @@ import AppLayout from '@/layouts/app-layout';
 import { type BreadcrumbItem } from '@/types';
 import { Head } from '@inertiajs/react';
 import FileExplorer from "@/components/FileExplorer";
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+} from '@/components/ui/table';
 
 export default function Partner() {
 
@@ -35,47 +41,46 @@ export default function Partner() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{collection.name}</h4>
                 <div className="rounded-md border">
-                    <table className="w-full text-sm">
-                        <thead></thead>
-                        <tbody>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Partner Name</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{partner.name}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Partner Code</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{partner.code}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Partner R* Path</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{partner.path}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Collection Long Name</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.name}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Collection Code</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.display_code}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Collection R* Code</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.code}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">R* Path</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.path}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Ready for Content?</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.ready_for_content ? 'Yes' : 'No'}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Quota (GB)</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{collection.quota.toLocaleString()}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className="font-medium">Partner Name</TableCell>
+                                <TableCell>{partner.name}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Partner Code</TableCell>
+                                <TableCell>{partner.code}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Partner R* Path</TableCell>
+                                <TableCell>{partner.path}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Collection Long Name</TableCell>
+                                <TableCell>{collection.name}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Collection Code</TableCell>
+                                <TableCell>{collection.display_code}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Collection R* Code</TableCell>
+                                <TableCell>{collection.code}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">R* Path</TableCell>
+                                <TableCell>{collection.path}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Ready for Content?</TableCell>
+                                <TableCell>{collection.ready_for_content ? 'Yes' : 'No'}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">Quota (GB)</TableCell>
+                                <TableCell>{collection.quota.toLocaleString()}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </div>
                 <h5 className="scroll-m-20 text-l font-semibold tracking-tight">Perspectives</h5>
                 <div className="rounded-md border">
