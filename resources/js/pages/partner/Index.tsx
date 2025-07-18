@@ -4,6 +4,12 @@ import AppLayout from '@/layouts/app-layout';
 import { Head } from '@inertiajs/react';
 import { Separator } from '@radix-ui/react-separator';
 import { PartnerCollectionsTable } from "@/components/PartnerCollectionsTable"
+import {
+    Table,
+    TableBody,
+    TableCell,
+    TableRow,
+} from '@/components/ui/table';
 
 export default function Partner() {
 
@@ -30,19 +36,18 @@ export default function Partner() {
             <div className="flex h-full flex-1 flex-col gap-4 rounded-xl p-4 overflow-x-auto">
                 <h4 className="scroll-m-20 text-xl font-semibold tracking-tight">{partner.name}</h4>
                 <div className="rounded-md border">
-                    <table className="w-full text-sm">
-                        <thead></thead>
-                        <tbody>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">Code</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{partner.code}</td>
-                            </tr>
-                            <tr className="[&>td]:whitespace-nowrap dark:[&>td]:hover:bg-gray-400">
-                                <td className="border px-4 py-2 text-left font-medium [&[align=center]]:text-center [&[align=right]]:text-right">R* Path</td>
-                                <td className="border px-4 py-2 text-left [&[align=center]]:text-center [&[align=right]]:text-right">{partner.path}</td>
-                            </tr>
-                        </tbody>
-                    </table>
+                    <Table>
+                        <TableBody>
+                            <TableRow>
+                                <TableCell className="font-medium">Code</TableCell>
+                                <TableCell>{partner.code}</TableCell>
+                            </TableRow>
+                            <TableRow>
+                                <TableCell className="font-medium">R* Path</TableCell>
+                                <TableCell>{partner.path}</TableCell>
+                            </TableRow>
+                        </TableBody>
+                    </Table>
                 </div>
                 <Separator />
                 <h5 className="scroll-m-20 text-l font-semibold tracking-tight">Partner collections</h5>

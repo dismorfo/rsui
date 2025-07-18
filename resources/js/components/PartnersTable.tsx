@@ -218,7 +218,6 @@ export function PartnersTable({ partners }: PartnersTableProps) {
                 <TableRow
                   key={row.id}
                   data-state={row.getIsSelected() && "selected"}
-                  className="group odd:bg-muted [&>td]:whitespace-nowrap [&>td]:hover:bg-gray-100 dark:[&>td]:hover:bg-gray-400"
                 >
                   {row.getVisibleCells().map((cell) => (
                     <TableCell key={cell.id}>
