@@ -319,7 +319,7 @@ class ExternalApiService
 
             $domain = parse_url($this->endpoint, PHP_URL_HOST);
 
-            Log::info("makeRequest Url: {$this->endpoint}   {$path}");
+            Log::info("makeRequest Url: {$this->endpoint}{$path}");
 
             $response = Http::baseUrl($this->endpoint)
                 ->withCookies([
@@ -332,10 +332,16 @@ class ExternalApiService
                 ->send($method, $path, $options);
 
             if ($response->failed()) {
-                Log::error("External API request failed for {$path}: " . $response->body(), [
-                    'status' => $response->status(),
-                    'response' => $response->json(),
+
+                Log::error("External API request failed for {$path}", [
+                    'url' => "{$this->endpoint}{$path}",
+                    'status' => $response->status()
                 ]);
+
+                // Log::info('Response JSON');
+                // Log::info($response->json());
+                // Log::info('Response Body');
+                // Log::info($response->body());
 
                 throw new Exception("External API request failed for {$path}");
 
@@ -393,6 +399,29 @@ class ExternalApiService
 
         if (!$expires || now()->timestamp > $expires) {
             throw new ExternalAuthSessionExpiredException('External session has expired.');
+        }
+    }
+
+    /**
+     * Update a user's name on the external API.
+     *
+     * @param string $userId The ID of the user to update.
+     * @param string $newName The new name for the user.
+     * @return array|null The API response data, or null on failure.
+     */
+    public function updateUserName(string $userId, string $newName): ?array
+    {
+        try {
+            $response = $this->makeRequest('PATCH', "users", [
+                'json' => ['username' => $newName],
+            ], false);
+
+            return $response?->json();
+        } catch (Exception $e) {
+            Log::error("Failed to update user: " . $e->getMessage(), [
+                'exception' => $e,
+            ]);
+            return null;
         }
     }
 }
