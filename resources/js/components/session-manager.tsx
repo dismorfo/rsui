@@ -12,7 +12,7 @@ import {
     AlertDialogTitle,
 } from '@/components/ui/alert-dialog';
 
-const SESSION_LIFETIME_MINUTES = parseInt(import.meta.env.VITE_SESSION_LIFETIME || '30', 10);
+const SESSION_LIFETIME_MINUTES = parseInt(import.meta.env.VITE_SESSION_LIFETIME || '25', 10);
 
 const WARNING_THRESHOLD_MINUTES = 5; // Warn 5 minutes before expiration
 

@@ -39,10 +39,13 @@ class ExternalApiService
     */
     public function downloadFile(string $path): StreamedResponse
     {
+
         try {
+
             $this->validateSession();
 
             $cookie = session('external_auth_cookie');
+
             if (!$cookie) {
                 throw new \Exception("External authentication cookie not found in session.");
             }
@@ -57,6 +60,8 @@ class ExternalApiService
             }
 
             $externalRequestUrl = "{$path}?download=true";
+
+            Log::info("External request Url: $externalRequestUrl}");
 
             $filename = basename(parse_url($path, PHP_URL_PATH));
             if (empty($filename) || $filename === '/') {
@@ -94,6 +99,8 @@ class ExternalApiService
                 $responseHeaders[strtolower(trim($parts[0]))][] = trim($parts[1]);
                 return $len;
             });
+
+            LOG::info($responseHeaders);
 
             // Pass the derived filename to the StreamedResponse
             return new StreamedResponse(function () use ($ch) {
@@ -148,6 +155,7 @@ class ExternalApiService
         $response = $this->makeRequest('GET', $sanitizedPath);
 
         $data = $response->json();
+
         $data['url'] = "/fs/{$sanitizedPath}";
         if (isset($data['children'])) {
           foreach ($data['children'] as $index => $child) {
@@ -161,6 +169,19 @@ class ExternalApiService
         }
 
         return $data;
+    }
+
+    /**
+     * Ping service.
+     *
+     * @param string $endpoint The API endpoint (e.g., 'products', 'users')
+     * @return array|null The API response data, or null on failure.
+     */
+    public function ping(): ?array
+    {
+        $response = $this->makeRequest('GET', 'ping');
+
+        return $response?->json();
     }
 
     /**
@@ -241,7 +262,6 @@ class ExternalApiService
             }
 
         } catch (Exception $e) {
-            print_r($e);
             Log::error("getCollectionById error: " . $e->getMessage(), [ 'exception' => $e, ]);
             return null;
         }
@@ -298,6 +318,8 @@ class ExternalApiService
             }
 
             $domain = parse_url($this->endpoint, PHP_URL_HOST);
+
+            Log::info("makeRequest Url: {$this->endpoint}   {$path}");
 
             $response = Http::baseUrl($this->endpoint)
                 ->withCookies([

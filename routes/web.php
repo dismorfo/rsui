@@ -58,9 +58,7 @@ Route::middleware(['auth', 'check.external.expiration'])->group(function () {
     Route::post('logout', [AuthenticatedSessionController::class, 'destroy'])
         ->name('logout');
 
-    Route::post('ping', function () {
-        return response()->json(['message' => 'pong']);
-    })->name('ping');
+    Route::get('ping', [ExternalApiService::class, 'ping'])->name('ping');
 
 });
 

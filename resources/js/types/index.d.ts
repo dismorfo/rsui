@@ -127,4 +127,11 @@ export interface Storage {
   children?: FileItem[];
 }
 
+export interface FilePreviewDialogTriggerProps {
+  fileUrl: string; // The URL of the file to preview
+  triggerLabel: string; // The text for the button/link that opens the dialog
+}
 
+export interface FilePreviewerProps {
+  fileUrl?: string; // Optional URL to stream the file content from
+}
