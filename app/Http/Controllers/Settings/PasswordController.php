@@ -3,37 +3,44 @@
 namespace App\Http\Controllers\Settings;
 
 use App\Http\Controllers\Controller;
-use Illuminate\Http\RedirectResponse;
+use App\Services\ExternalApiService;
 use Illuminate\Http\Request;
-use Illuminate\Support\Facades\Hash;
-use Illuminate\Validation\Rules\Password;
+use Illuminate\Support\Facades\Log;
 use Inertia\Inertia;
-use Inertia\Response;
 
 class PasswordController extends Controller
 {
-    /**
-     * Show the user's password settings page.
-     */
-    public function edit(): Response
+    protected $externalApiService;
+
+    public function __construct(ExternalApiService $externalApiService)
+    {
+        $this->externalApiService = $externalApiService;
+    }
+
+    public function edit()
     {
         return Inertia::render('settings/password');
     }
 
-    /**
-     * Update the user's password.
-     */
-    public function update(Request $request): RedirectResponse
+    public function update(Request $request)
     {
-        $validated = $request->validate([
-            'current_password' => ['required', 'current_password'],
-            'password' => ['required', Password::defaults(), 'confirmed'],
+        $validatedData = $request->validate([
+            'current_password' => 'required',
+            'password' => 'required|confirmed',
+            'password_confirmation' => 'required',
         ]);
 
-        $request->user()->update([
-            'password' => Hash::make($validated['password']),
-        ]);
+        try {
+            $response = $this->externalApiService->updateUserPassword($validatedData);
 
-        return back();
+            if ($response) {
+                return back()->with('success', 'Password updated successfully.');
+            } else {
+                return back()->withErrors(['current_password' => 'The provided password does not match your current password.']);
+            }
+        } catch (\Exception $e) {
+            Log::error('Error updating password: ' . $e->getMessage());
+            return back()->with('error', 'An error occurred while updating your password.');
+        }
     }
 }

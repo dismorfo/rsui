@@ -338,10 +338,6 @@ class ExternalApiService
                     'status' => $response->status()
                 ]);
 
-                // Log::info('Response JSON');
-                // Log::info($response->json());
-                // Log::info('Response Body');
-                // Log::info($response->body());
 
                 throw new Exception("External API request failed for {$path}");
 
@@ -412,7 +408,7 @@ class ExternalApiService
     public function updateUserName(string $userId, string $newName): ?array
     {
         try {
-            $response = $this->makeRequest('PATCH', "users", [
+            $response = $this->makeRequest('PATCH', 'users', [
                 'json' => ['username' => $newName],
             ], false);
 
@@ -424,4 +420,28 @@ class ExternalApiService
             return null;
         }
     }
+
+    /**
+     * Update a user's password on the external API.
+     *
+     * @param array $passwordData The password data.
+     * @return array|null The API response data, or null on failure.
+     */
+    public function updateUserPassword(array $passwordData): ?array
+    {
+        try {
+
+            $response = $this->makeRequest('PATCH', 'users', [
+                'json' => $passwordData,
+            ], false);
+
+            return $response?->json();
+        } catch (Exception $e) {
+            Log::error("Failed to update user password: " . $e->getMessage(), [
+                'exception' => $e,
+            ]);
+            return null;
+        }
+    }
+
 }
