@@ -13,8 +13,11 @@ import FilePreviewer from '@/components/FilePreviewer';
 
 import type { FilePreviewDialogTriggerProps } from '@/types';
 
-const FilePreviewDialogTrigger: React.FC<FilePreviewDialogTriggerProps> = ({ fileUrl, triggerLabel }) => {
+const FilePreviewDialogTrigger: React.FC<FilePreviewDialogTriggerProps> = ({ item, triggerLabel }) => {
+
     const [open, setOpen] = useState(false);
+
+    const displayFileUrl = item.download_url?.replace('?download=true', '').replace('/download', '');
 
     return (
         <Dialog open={open} onOpenChange={setOpen}>
@@ -27,11 +30,11 @@ const FilePreviewDialogTrigger: React.FC<FilePreviewDialogTriggerProps> = ({ fil
                 <DialogHeader>
                     <DialogTitle>File Previewer</DialogTitle>
                     <DialogDescription>
-                        Displaying content from: <span className="font-mono text-sm text-gray-600 break-all">{fileUrl}</span>
+                        Displaying file: <span className="font-mono text-sm text-gray-600 break-all">{displayFileUrl}</span>
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
-                    <FilePreviewer fileUrl={fileUrl} />
+                    <FilePreviewer item={item} fileUrl={item.download_url} />
                 </div>
             </DialogContent>
         </Dialog>

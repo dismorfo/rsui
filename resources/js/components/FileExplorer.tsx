@@ -7,7 +7,8 @@ import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/h
 import { Button } from '@/components/ui/button';
 import { Skeleton } from '@/components/ui/skeleton';
 import type { FileItem, Storage } from '@/types';
-
+import FilePreviewDialogTrigger from '@/components/FilePreviewDialogTrigger'; // Adjust path
+import mime from 'mime';
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -153,7 +154,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
   const isDownloadable = (item: FileItem) =>
     item.object_type === 'file' &&
     item.size !== undefined &&
-    item.size < 2 * 1024 * 1024 * 1024;
+    item.size < 2 * 1024 * 1024 * 1024; // Less than 2GB
 
   if (loading) {
     return (
@@ -332,31 +333,74 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                   selected === item.name && 'ring ring-primary'
                 );
 
+                item.preview = false;
+
+                // Hack to add mime type to the URL for previewing
+                // This is a workaround to ensure the file can be previewed correctly
+                // Fix will come from the backend in the future
+                if (item.object_type === 'file' && !item.mime_type &&  item.download_url) { // Only proceed if it's a file and mime_type isn't already set
+                    const displayFileUrl = item.download_url.replace('?download=true', '').replace('/download', '');
+                    const parts = displayFileUrl.split('.');
+                    const potentialExtension = parts.length > 1 ? parts.pop() : '';
+
+                    if (potentialExtension && potentialExtension.length <= 4 && /^[a-zA-Z0-9]+$/.test(potentialExtension)) {
+                        item.extension = potentialExtension.toLowerCase(); // Store in lowercase for consistency
+                    } else {
+                    // Otherwise, default to 'txt' for the extension
+                    item.extension = 'txt';
+                    }
+
+                    // Now, deduct the mime_type based on the determined extension
+                    if (item.object_type === 'file' && item.extension) { // Ensure extension is set
+                    item.mime_type = mime.getType(item.extension) || 'application/octet-stream';
+                    }
+
+                    // Optional: If you specifically want 'text/plain' for the 'txt' extension
+                    if (item.extension === 'txt' && !item.mime_type) { // This condition handles if 'txt' wasn't in the map
+                        item.mime_type = 'text/plain';
+                    }
+                    console.log(item.mime_type)
+                    // Set preview to true for specific mime types
+                    switch (item.mime_type) {
+                      case 'application/xml':
+                      case 'application/json':
+                      case 'text/plain':
+                      case 'text/csv':
+                      case 'text/xsl':
+                      case 'application/xslt+xml':
+                      case 'audio/wav':
+                      case 'audio/mpeg':
+                      case 'audio/ogg':
+                      case 'audio/aac':
+                        item.preview = true;
+                        break;
+                   }
+
+                }
+
                 return item.object_type === 'file' ? (
                   <ContextMenu key={item.name}>
                     <ContextMenuTrigger asChild>
                       <tr
                         className={rowClasses}
-                        onClick={() => handleClick(item)}
                         tabIndex={0}
                       >
                         <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
                         <td className="p-2">{item.object_type}</td>
                         <td className="p-2">{item.display_size}</td>
                         <td className="p-2">
-                            {/* {item.url ? (
-                                <a href={item.url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                                    View
-                                </a>
+                            {item.preview ? (
+                              ( <FilePreviewDialogTrigger item={item} triggerLabel="Preview" /> )
                             ) : (
-                                <span className="text-muted-foreground/50">N/A</span>
-                            )} */}
-                            <HoverCard>
-                              <HoverCardTrigger><span className="text-muted-foreground/50">Not available</span></HoverCardTrigger>
-                              <HoverCardContent>
-                                <span>Unavailable at the moment — please check back soon.</span>
-                              </HoverCardContent>
-                            </HoverCard>
+                              <div>
+                                <HoverCard>
+                                  <HoverCardTrigger><span className="text-muted-foreground/50">Not available</span></HoverCardTrigger>
+                                  <HoverCardContent>
+                                    <span>Unavailable at the moment — please check back soon.</span>
+                                  </HoverCardContent>
+                                </HoverCard>
+                              </div>
+                            )}
                         </td>
                         <td className="p-2">
                           {isDownloadable(item) && item.download_url ? (
@@ -375,18 +419,6 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                         <td className="p-2">{formatDate(item.last_modified)}</td>
                       </tr>
                     </ContextMenuTrigger>
-                    <ContextMenuContent>
-                      {item.download_url && isDownloadable(item) && (
-                        <ContextMenuItem onClick={() => window.open(item.download_url, '_blank')}>
-                          Download
-                        </ContextMenuItem>
-                      )}
-                      {/* {item.url && (
-                        <ContextMenuItem onClick={() => window.open(item.url, '_blank')}>
-                          Preview
-                        </ContextMenuItem>
-                      )} */}
-                    </ContextMenuContent>
                   </ContextMenu>
                 ) : (
                   <tr

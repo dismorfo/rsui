@@ -107,6 +107,10 @@ export interface FileItem {
   download_url?: string;
   children?: FileItem[];
   path?: string;
+  mime_type?: string;
+  preview?: boolean; // Indicates if the file can be previewed
+  is_directory?: boolean; // Indicates if the item is a directory
+  is_file?: boolean; // Indicates if the item is a file
 }
 export interface FileExplorerProps {
   storage: Storage;
@@ -128,10 +132,10 @@ export interface Storage {
 }
 
 export interface FilePreviewDialogTriggerProps {
-  fileUrl: string; // The URL of the file to preview
+  item: FileItem;
   triggerLabel: string; // The text for the button/link that opens the dialog
 }
 
 export interface FilePreviewerProps {
-  fileUrl?: string; // Optional URL to stream the file content from
+  item?: FileItem;
 }

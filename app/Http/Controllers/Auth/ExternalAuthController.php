@@ -19,14 +19,13 @@ use Illuminate\Http\Client\RequestException;
 
 class ExternalAuthController extends Controller
 {
-
     /**
      * Show the login page.
      */
     public function create(Request $request): Response
     {
         return Inertia::render('auth/login', [
-            'canResetPassword' => false, // Route::has('password.request'),
+            'canResetPassword' => false,
             'status' => $request->session()->get('status'),
         ]);
     }
@@ -45,81 +44,63 @@ class ExternalAuthController extends Controller
 
     public function login(Request $request)
     {
-
         $request->validate([
             'email' => 'required|string',
             'password' => 'required|string',
         ]);
 
-        $endpoint = config('services.rs.v1.endpoint');
-
-        $endpoint = $endpoint . 'sessions';
+        $endpoint = config('services.rs.v1.endpoint') . 'sessions';
 
         try {
-
             // Call external API
             $response = Http::timeout(10)->post($endpoint, $request->only('email', 'password'));
 
-            if (!$response->ok()) {
+            if (!$response->successful()) {
                 return back()->withErrors(['email' => 'Invalid credentials']);
             }
 
-            // If the request was successful and you expect JSON
-            if ($response->successful()) {
+            $data = $response->json();
 
-                $data = $response->json();
+            // Extract Authorization cookie from response cookies
+            $authCookie = optional(
+                collect($response->cookies()->toArray())->firstWhere('Name', 'Authorization')
+            )['Value'] ?? null;
 
-                $authCookie = optional(
-                    collect($response->cookies()->toArray())->firstWhere('Name', 'Authorization')
-                )['Value'] ?? null;
+            $expiresCookie = optional(
+                collect($response->cookies()->toArray())->firstWhere('Name', 'Authorization')
+            )['Expires'] ?? null;
 
-                $expiresCookie = optional(
-                    collect($response->cookies()->toArray())->firstWhere('Name', 'Authorization')
-                )['Expires'] ?? null;
-
-                if (!$authCookie) {
-                    return back()->withErrors(['email' => 'Missing auth cookie from external API']);
-                }
-
-                // Store it in the session
-                session(['external_auth_cookie' => $authCookie]);
-
-                session(['external_auth_expires' => $expiresCookie]);
-
-                // Create or update local user (for Sanctum session)
-                $user = User::updateOrCreate(
-                    ['email' => $request->email],
-                    [
-                        'name' => $data['username'] ?? 'External User',
-                        'password' => Hash::make(Str::random(32)),
-                    ]
-                );
-
-                Auth::login($user);
-
-                return redirect()->intended('/dashboard');
-
-            } else {
-                // If the request was not successful (e.g., 4xx or 5xx status code)
-                Log::error('API request failed with status: ' . $response->status(), ['response' => $response->body()]);
-                return back()->withErrors(['errors' => 'API request failed with status ' . $response->status()]);
+            if (!$authCookie) {
+                Log::error('Missing Authorization cookie in API response.', ['response' => $response->body()]);
+                return back()->withErrors(['email' => 'Missing auth cookie from external API']);
             }
 
-        } catch (ConnectionException $e) {
-            // Handle connection timeout or other connection errors
-            return back()->withErrors(['errors' => 'API Connection Error: ' . $e->getMessage() ]);
+            // Store in session
+            session(['external_auth_cookie' => $authCookie]);
+            session(['external_auth_expires' => $expiresCookie]);
 
+            // Create or update local user for Sanctum session
+            $user = User::updateOrCreate(
+                ['email' => $request->email],
+                [
+                    'name' => $data['username'] ?? 'External User',
+                    'password' => Hash::make(Str::random(32)),
+                ]
+            );
+
+            Auth::login($user);
+
+            return redirect()->intended('/dashboard');
+
+        } catch (ConnectionException $e) {
+            return back()->withErrors(['errors' => 'API Connection Error: ' . $e->getMessage()]);
         } catch (RequestException $e) {
-            // Handle other HTTP request errors (e.g., non-2xx responses that were not caught by ->successful())
-            // This might catch cases where the server responded but with an error status
             Log::error('API Request Error: ' . $e->getMessage(), ['response' => $e->response ? $e->response->body() : 'No response body']);
             return back()->withErrors(['errors' => 'An error occurred while fetching data from the API.']);
         } catch (\Exception $e) {
-            // Catch any other unexpected errors
-            Log::error('An unexpected error occurred: ' . $e->getMessage());
+            Log::error('Unexpected error: ' . $e->getMessage());
             return back()->withErrors(['errors' => 'An unexpected error occurred.']);
         }
-
     }
 
     public function logout(Request $request)
@@ -130,5 +111,4 @@ class ExternalAuthController extends Controller
 
         return redirect('/');
     }
-
 }
