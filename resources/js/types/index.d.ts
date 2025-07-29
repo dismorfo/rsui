@@ -99,6 +99,7 @@ export interface PartnersTableProps {
 
 export interface FileItem {
   name: string;
+  extension: string;
   object_type: 'file' | 'directory';
   display_size: string;
   size: number;

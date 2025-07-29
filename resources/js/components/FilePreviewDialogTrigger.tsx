@@ -22,7 +22,7 @@ const FilePreviewDialogTrigger: React.FC<FilePreviewDialogTriggerProps> = ({ ite
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="link" className="text-blue-600 hover:underline p-0 h-auto">
+                <Button variant="link" className="cursor-pointer hover:underline p-0 h-auto">
                     {triggerLabel}
                 </Button>
             </DialogTrigger>
@@ -34,7 +34,7 @@ const FilePreviewDialogTrigger: React.FC<FilePreviewDialogTriggerProps> = ({ ite
                     </DialogDescription>
                 </DialogHeader>
                 <div className="py-4">
-                    <FilePreviewer item={item} fileUrl={item.download_url} />
+                    <FilePreviewer item={item} />
                 </div>
             </DialogContent>
         </Dialog>

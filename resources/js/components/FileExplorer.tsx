@@ -188,17 +188,16 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
         <span className="font-semibold">Path:</span>
         {history.map((h, i) => (
           <span key={i} className="flex items-center">
-            {/* Only render button if the history item has a URL */}
             {h.url ? (
               <button
                 onClick={() => goToIndex(i)}
-                className="text-primary underline hover:text-primary/80 truncate max-w-[120px]"
+                className="text-primary cursor-pointer underline hover:text-primary/80"
                 title={h.name}
               >
                 {h.name}
               </button>
             ) : (
-              <span className="text-muted-foreground truncate max-w-[120px]" title={`Unnavigable: ${h.name}`}>
+              <span className="text-muted-foreground" title={`Unnavigable: ${h.name}`}>
                 {h.name}
               </span>
             )}
@@ -206,7 +205,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
           </span>
         ))}
         {currentData.name && (
-            <span className="truncate max-w-[120px]" title={currentData.name}>
+            <span title={currentData.name}>
             {currentData.name}
             </span>
         )}
@@ -334,8 +333,6 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                   selected === item.name && 'ring ring-primary'
                 );
 
-                item.preview = false;
-
                 // Hack to add mime type to the URL for previewing
                 // This is a workaround to ensure the file can be previewed correctly
                 // Fix will come from the backend in the future
@@ -347,8 +344,8 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                     if (potentialExtension && potentialExtension.length <= 4 && /^[a-zA-Z0-9]+$/.test(potentialExtension)) {
                         item.extension = potentialExtension.toLowerCase(); // Store in lowercase for consistency
                     } else {
-                    // Otherwise, default to 'txt' for the extension
-                    item.extension = 'txt';
+                      // Otherwise, default to 'txt' for the extension
+                      item.extension = 'txt';
                     }
 
                     // Now, deduct the mime_type based on the determined extension
@@ -360,7 +357,10 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                     if (item.extension === 'txt' && !item.mime_type) { // This condition handles if 'txt' wasn't in the map
                         item.mime_type = 'text/plain';
                     }
-                    console.log(item.mime_type)
+                }
+
+                item.preview = false;
+                if (item.mime_type) {
                     // Set preview to true for specific mime types
                     switch (item.mime_type) {
                       case 'application/xml':
@@ -379,51 +379,46 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                         item.preview = true;
                         break;
                    }
-
                 }
 
                 return item.object_type === 'file' ? (
-                  <ContextMenu key={item.name}>
-                    <ContextMenuTrigger asChild>
-                      <tr
+                    <tr
                         className={rowClasses}
                         tabIndex={0}
-                      >
-                        <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
-                        <td className="p-2">{item.object_type}</td>
-                        <td className="p-2">{item.display_size}</td>
-                        <td className="p-2">
-                            {item.preview ? (
-                              ( <FilePreviewDialogTrigger item={item} triggerLabel="Preview" /> )
-                            ) : (
-                              <div>
-                                <HoverCard>
-                                  <HoverCardTrigger><span className="text-muted-foreground/50">Not available</span></HoverCardTrigger>
-                                  <HoverCardContent>
-                                    <span>Unavailable at the moment — please check back soon.</span>
-                                  </HoverCardContent>
-                                </HoverCard>
-                              </div>
-                            )}
-                        </td>
-                        <td className="p-2">
-                          {isDownloadable(item) && item.download_url ? (
-                            <a href={item.download_url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                              Download
-                            </a>
+                    >
+                      <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
+                      <td className="p-2">{item.object_type}</td>
+                      <td className="p-2">{item.display_size}</td>
+                      <td className="p-2">
+                          {item.preview ? (
+                            ( <FilePreviewDialogTrigger item={item} triggerLabel="Preview" /> )
                           ) : (
-                            <HoverCard>
-                              <HoverCardTrigger><span className="text-muted-foreground/50">N/A</span></HoverCardTrigger>
-                              <HoverCardContent>
-                                <span>Download for files over 2GB of size is not currently supported.</span>
-                              </HoverCardContent>
-                            </HoverCard>
+                            <div>
+                              <HoverCard>
+                                <HoverCardTrigger><span className="text-muted-foreground/50">Not available</span></HoverCardTrigger>
+                                <HoverCardContent>
+                                  <span>Unavailable at the moment — please check back soon.</span>
+                                </HoverCardContent>
+                              </HoverCard>
+                            </div>
                           )}
-                        </td>
-                        <td className="p-2">{formatDate(item.last_modified)}</td>
-                      </tr>
-                    </ContextMenuTrigger>
-                  </ContextMenu>
+                      </td>
+                      <td className="p-2">
+                        {isDownloadable(item) && item.download_url ? (
+                          <a href={item.download_url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                            Download
+                          </a>
+                        ) : (
+                          <HoverCard>
+                            <HoverCardTrigger><span className="text-muted-foreground/50">N/A</span></HoverCardTrigger>
+                            <HoverCardContent>
+                              <span>Download for files over 2GB of size is not currently supported.</span>
+                            </HoverCardContent>
+                          </HoverCard>
+                        )}
+                      </td>
+                      <td className="p-2">{formatDate(item.last_modified)}</td>
+                    </tr>
                 ) : (
                   <tr
                     key={item.name}
