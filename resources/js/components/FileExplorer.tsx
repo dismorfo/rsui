@@ -329,7 +329,8 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                 const isEven = index % 2 === 0;
                 const rowClasses = cn(
                   isEven ? 'bg-background' : 'bg-muted/50',
-                  'hover:bg-accent cursor-pointer',
+                  'hover:bg-accent',
+                  item.object_type === 'directory' && 'cursor-pointer',
                   selected === item.name && 'ring ring-primary'
                 );
 
@@ -372,6 +373,9 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                       case 'audio/mpeg':
                       case 'audio/ogg':
                       case 'audio/aac':
+                      case 'video/mp4':
+                      case 'video/webm':
+                      case 'video/ogg':
                         item.preview = true;
                         break;
                    }

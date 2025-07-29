@@ -33,16 +33,17 @@ const formatContent = (content: string, type: string): string => {
                     indent = indent.substring(2);
                 }
                 result += indent + '<' + node + '>\r\n';
-                if (node.match(/^<?\w[^>]*[^\/]$/) && !node.endsWith('/>')) {
+                if (node.match(/^<?\w[^>]*[^/]$/) && !node.endsWith('/>')) {
                     indent += '  ';
                 }
             });
             return result.trim();
 
         }
-    } catch (e: any) {
+    } catch (e: unknown) {
+        const message = e instanceof Error ? e.message : String(e);
         toast.error(`Error formatting ${type}.`, {
-            description: e.message,
+            description: message,
         });
         return content;
     }
