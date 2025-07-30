@@ -5,10 +5,10 @@ import { cn } from '@/lib/utils';
 import { Folder, File, ChevronRight, Search, Table, LayoutGrid } from 'lucide-react';
 import { HoverCard, HoverCardContent, HoverCardTrigger } from '@/components/ui/hover-card';
 import { Button } from '@/components/ui/button';
-import { Skeleton } from '@/components/ui/skeleton';
+import LoadingSkeleton from '@/components/LoadingSkeleton';
 import type { FileItem, Storage } from '@/types';
 import FilePreviewDialogTrigger from '@/components/FilePreviewDialogTrigger'; // Adjust path
-import mime from 'mime';
+
 import {
   ContextMenu,
   ContextMenuTrigger,
@@ -94,7 +94,6 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
   };
 
   const handleClick = async (item: FileItem) => {
-    console.log("Clicked item:", item);
     if (item.object_type === 'directory') {
       setLoading(true);
       // Defensive check: A clicked directory MUST have a URL to navigate into it
@@ -103,14 +102,11 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
         setLoading(false);
         return;
       }
+
       const res = await fetch(item.url);
       const data = await res.json();
 
       if (currentData) {
-        console.log('data', data)
-        console.log('currentData', currentData)
-        // When pushing to history, ensure 'currentData' (which is a FileItem) has a URL.
-        // This is where the problematic object from your error might have entered history.
         if (currentData.object_type === 'directory' && !currentData.url) {
           console.warn("Warning: Attempting to add a directory to history without a URL:", currentData);
         }
@@ -157,21 +153,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
     item.size < 2 * 1024 * 1024 * 1024; // Less than 2GB
 
   if (loading) {
-    return (
-      <div className="p-4">
-        <Skeleton className="h-6 w-48 mb-4" />
-        <Skeleton className="h-10 rounded-md" />
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4 mt-4">
-          {Array.from({ length: 8 }).map((_, i) => (
-            <Card key={i} className="p-4">
-              <Skeleton className="h-6 w-6 mb-2 mx-auto" />
-              <Skeleton className="h-4 w-24 mx-auto mb-1" />
-              <Skeleton className="h-3 w-20 mx-auto" />
-            </Card>
-          ))}
-        </div>
-      </div>
-    );
+    return <LoadingSkeleton />;
   }
 
   if (!currentData) {
@@ -187,7 +169,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
       <div className="mb-2 text-sm text-muted-foreground flex flex-wrap items-center gap-1">
         <span className="font-semibold">Path:</span>
         {history.map((h, i) => (
-          <span key={i} className="flex items-center">
+          <span key={h.url || i} className="flex items-center">
             {h.url ? (
               <button
                 onClick={() => goToIndex(i)}
@@ -249,7 +231,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
         <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
           {filteredChildren.map((item: FileItem) => (
             item.object_type === 'file' || item.object_type === 'directory' ? (
-              <ContextMenu key={item.name}>
+              <ContextMenu key={item.url || item.name}>
                 <ContextMenuTrigger asChild>
                   <div>
                     <HoverCard>
@@ -311,7 +293,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
           ))}
         </div>
       ) : (
-        <div className="overflow-x-auto border rounded-md max-h-[600px]">
+        <div className="overflow-x-auto border rounded-md">
           <table className="min-w-full text-sm">
             <thead className="bg-muted text-left sticky top-0 z-10">
               <tr>
@@ -325,6 +307,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
             </thead>
             <tbody className="divide-y divide-border">
               {filteredChildren.map((item: FileItem, index: number) => {
+
                 const isEven = index % 2 === 0;
                 const rowClasses = cn(
                   isEven ? 'bg-background' : 'bg-muted/50',
@@ -333,33 +316,8 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                   selected === item.name && 'ring ring-primary'
                 );
 
-                // Hack to add mime type to the URL for previewing
-                // This is a workaround to ensure the file can be previewed correctly
-                // Fix will come from the backend in the future
-                if (item.object_type === 'file' && !item.mime_type &&  item.download_url) { // Only proceed if it's a file and mime_type isn't already set
-                    const displayFileUrl = item.download_url.replace('?download=true', '').replace('/download', '');
-                    const parts = displayFileUrl.split('.');
-                    const potentialExtension = parts.length > 1 ? parts.pop() : '';
-
-                    if (potentialExtension && potentialExtension.length <= 4 && /^[a-zA-Z0-9]+$/.test(potentialExtension)) {
-                        item.extension = potentialExtension.toLowerCase(); // Store in lowercase for consistency
-                    } else {
-                      // Otherwise, default to 'txt' for the extension
-                      item.extension = 'txt';
-                    }
-
-                    // Now, deduct the mime_type based on the determined extension
-                    if (item.object_type === 'file' && item.extension) { // Ensure extension is set
-                    item.mime_type = mime.getType(item.extension) || 'application/octet-stream';
-                    }
-
-                    // Optional: If you specifically want 'text/plain' for the 'txt' extension
-                    if (item.extension === 'txt' && !item.mime_type) { // This condition handles if 'txt' wasn't in the map
-                        item.mime_type = 'text/plain';
-                    }
-                }
-
                 item.preview = false;
+
                 if (item.mime_type) {
                     // Set preview to true for specific mime types
                     switch (item.mime_type) {
@@ -376,6 +334,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                       case 'video/mp4':
                       case 'video/webm':
                       case 'video/ogg':
+                      case 'text/html':
                         item.preview = true;
                         break;
                    }
@@ -383,10 +342,11 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
 
                 return item.object_type === 'file' ? (
                     <tr
+                        key={item.name}
                         className={rowClasses}
                         tabIndex={0}
                     >
-                      <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
+                      <td className="p-2 max-w-xs" title={item.name}>{item.name}</td>
                       <td className="p-2">{item.object_type}</td>
                       <td className="p-2">{item.display_size}</td>
                       <td className="p-2">
