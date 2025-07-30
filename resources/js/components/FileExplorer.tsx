@@ -303,6 +303,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                 <th className="p-2 font-medium">Preview</th>
                 <th className="p-2 font-medium">Download</th>
                 <th className="p-2 font-medium">Last Modified</th>
+                <th className="p-2 font-medium"></th>
               </tr>
             </thead>
             <tbody className="divide-y divide-border">
@@ -378,6 +379,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                         )}
                       </td>
                       <td className="p-2">{formatDate(item.last_modified)}</td>
+                      <td className="p-2"></td>
                     </tr>
                 ) : (
                   <tr
@@ -392,6 +394,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                     <td className="p-2"></td>
                     <td className="p-2"></td>
                     <td className="p-2">{formatDate(item.last_modified)}</td>
+                    <td className="p-2"><ChevronRight size={24} className="text-gray-400" /></td>
                   </tr>
                 );
               })}
