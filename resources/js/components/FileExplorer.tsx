@@ -203,95 +203,10 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
             className="pl-8"
           />
         </div>
-        <div className="flex gap-2">
-          <Button
-            variant={viewMode === 'table' ? 'default' : 'outline'}
-            onClick={() => setViewMode('table')}
-            size="icon"
-            aria-label="Table view"
-            className="cursor-pointer"
-          >
-            <Table className="h-4 w-4" />
-          </Button>
-          <Button
-            variant={viewMode === 'grid' ? 'default' : 'outline'}
-            onClick={() => setViewMode('grid')}
-            size="icon"
-            aria-label="Grid view"
-            className="cursor-pointer"
-          >
-            <LayoutGrid className="h-4 w-4" />
-          </Button>
-        </div>
       </div>
 
       {filteredChildren.length === 0 ? (
         <div className="text-center text-muted-foreground py-10">Empty directory.</div>
-      ) : viewMode === 'grid' ? (
-        <div className="grid grid-cols-1 sm:grid-cols-2 md:grid-cols-3 lg:grid-cols-4 gap-4">
-          {filteredChildren.map((item: FileItem) => (
-            item.object_type === 'file' || item.object_type === 'directory' ? (
-              <ContextMenu key={item.url || item.name}>
-                <ContextMenuTrigger asChild>
-                  <div>
-                    <HoverCard>
-                      <HoverCardTrigger asChild>
-                        <Card
-                          onClick={() => handleClick(item)}
-                          className={cn(
-                            'cursor-pointer hover:bg-accent hover:text-accent-foreground transition',
-                            selected === item.name && 'ring ring-primary'
-                          )}
-                        >
-                          <CardContent className="p-4 flex flex-col items-center text-center">
-                            {item.object_type === 'directory' ? (
-                              <Folder className="h-6 w-6 mb-2" />
-                            ) : (
-                              <File className="h-6 w-6 mb-2" />
-                            )}
-                            <div className="text-sm font-medium truncate w-full" title={item.name}>
-                              {item.name}
-                            </div>
-                            <div className="text-xs text-muted-foreground mt-1">
-                              {formatDate(item.last_modified)}
-                            </div>
-                            {item.object_type === 'file' && item.display_size && (
-                              <div className="text-xs text-muted-foreground">{item.display_size}</div>
-                            )}
-                          </CardContent>
-                        </Card>
-                      </HoverCardTrigger>
-                      <HoverCardContent className="w-64 text-sm">
-                        <div className="font-semibold mb-1 truncate" title={item.name}>
-                          {item.name}
-                        </div>
-                        <div>Type: {item.object_type}</div>
-                        <div>Last Modified: {formatDate(item.last_modified)}</div>
-                        {item.object_type === 'file' && item.display_size && (
-                          <div>Size: {item.display_size}</div>
-                        )}
-                      </HoverCardContent>
-                    </HoverCard>
-                  </div>
-                </ContextMenuTrigger>
-                {item.object_type === 'file' && (
-                  <ContextMenuContent>
-                    {item.download_url && isDownloadable(item) && (
-                      <ContextMenuItem onClick={() => window.open(item.download_url, '_blank')}>
-                        Download
-                      </ContextMenuItem>
-                    )}
-                    {/* {item.url && (
-                      <ContextMenuItem onClick={() => window.open(item.url, '_blank')}>
-                        Preview
-                      </ContextMenuItem>
-                    )} */}
-                  </ContextMenuContent>
-                )}
-              </ContextMenu>
-            ) : null
-          ))}
-        </div>
       ) : (
         <div className="overflow-x-auto border rounded-md">
           <table className="min-w-full text-sm">
