@@ -2,7 +2,10 @@
 /.phpunit.cache
 /bootstrap/ssr
 /node_modules
-/public/build
+# Not a great idea to ignore this, but we do not hav Node.js on the server,
+# and Node not needed for production other than for building assets.
+# Will add to the repository and then work in a better structure later.
+# /public/build
 /public/hot
 /public/storage
 /storage/*.key
