@@ -22,8 +22,15 @@ const FilePreviewDialogTrigger: React.FC<FilePreviewDialogTriggerProps> = ({ ite
     return (
         <Dialog open={open} onOpenChange={setOpen}>
             <DialogTrigger asChild>
-                <Button variant="link" className="cursor-pointer hover:underline p-0 h-auto">
-                    {triggerLabel}
+                <Button asChild variant="link" className="cursor-pointer hover:underline p-0 h-auto">
+                    <a href={displayFileUrl} target="_blank" rel="noopener noreferrer" onClick={(e) => {
+                        if (!e.ctrlKey && !e.metaKey && !e.shiftKey && e.button === 0) {
+                            e.preventDefault();
+                            setOpen(true);
+                        }
+                    }}>
+                        {triggerLabel}
+                    </a>
                 </Button>
             </DialogTrigger>
             <DialogContent className="sm:max-w-[800px] max-h-[90vh] overflow-y-auto">

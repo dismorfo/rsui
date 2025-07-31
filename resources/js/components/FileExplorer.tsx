@@ -319,8 +319,8 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
 
                 item.preview = false;
 
+                // Set preview to true for specific mime types
                 if (item.size && item.size > 0 && item.mime_type) {
-                    // Set preview to true for specific mime types
                     switch (item.mime_type) {
                       case 'application/xml':
                       case 'application/json':
@@ -351,7 +351,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                       <td className="p-2">{item.object_type}</td>
                       <td className="p-2">{item.display_size}</td>
                       <td className="p-2">
-                          {item.preview ? (
+                          {item.preview && item.download_url ? (
                             ( <FilePreviewDialogTrigger item={item} triggerLabel="Preview" /> )
                           ) : (
                             <div>
