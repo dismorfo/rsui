@@ -68,7 +68,7 @@ class CollectionController extends Controller
             $transformedArray[] = [
               'name' => $name,
               'object_type' => 'directory',
-              'display_size' => '', // As per your desired output, this is an empty string.
+              'display_size' => '',
               'url' => $itemUrl
             ];
 
@@ -85,6 +85,14 @@ class CollectionController extends Controller
 
         } catch (Exception $e) {
             $msg = "External API error: " . $e->getMessage();
+            // Optionally log the error
+            Log::error($msg);
+            // Return an error view or a fallback response
+            return Inertia::render('collection/Index', [
+                'collection' => null,
+                'storage_path' => [],
+                'error' => $msg,
+            ]);
         }
     }
 

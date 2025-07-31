@@ -319,7 +319,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
 
                 item.preview = false;
 
-                if (item.mime_type) {
+                if (item.size && item.size > 0 && item.mime_type) {
                     // Set preview to true for specific mime types
                     switch (item.mime_type) {
                       case 'application/xml':

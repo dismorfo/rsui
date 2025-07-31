@@ -14,7 +14,7 @@ const FilePreviewer: React.FC<FilePreviewerProps> = ({ item }) => {
     const [isLoading, setIsLoading] = useState<boolean>(false);
     const [error, setError] = useState<string | null>(null);
 
-    // Get the file URL, which will be the PHP stream endpoint for audio/video
+    // Get the file URL, which will be the PHP stream endpoint.
     const fileUrl = useMemo(() => item?.download_url, [item]);
 
     useEffect(() => {
