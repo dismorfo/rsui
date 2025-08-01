@@ -1,0 +1,1 @@
+import{j as e}from"./app-CHdkg-5d.js";import{F as t}from"./FilePreviewer-DOV4VPMx.js";/* empty css            */import"./createLucideIcon-uxwRKfxC.js";import"./index-Ccww1qkH.js";import"./loader-circle-DjiT4gT5.js";const x=({item:r})=>e.jsx(t,{item:r});export{x as default};
