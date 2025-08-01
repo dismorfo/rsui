@@ -9,6 +9,7 @@ import BasicAudioPlayer from '@/components/BasicAudioPlayer';
 import BasicVideoPlayer from '@/components/BasicVideoPlayer';
 
 const FilePreviewer: React.FC<FilePreviewerProps> = ({ item }) => {
+
     const [fileContent, setFileContent] = useState<string>('');
     const [fileType, setFileType] = useState<string>(''); // 'json', 'xml', 'text', 'audio', 'video', or empty
     const [isLoading, setIsLoading] = useState<boolean>(false);

@@ -9,6 +9,7 @@ use App\Http\Controllers\Settings\ProfileController;
 use App\Http\Controllers\Settings\PasswordController;
 use App\Http\Controllers\Auth\AuthenticatedSessionController;
 use App\Http\Controllers\Auth\ExternalAuthController;
+use App\Http\Controllers\FilePreviewController;
 
 use Inertia\Inertia;
 
@@ -34,6 +35,8 @@ Route::middleware(['auth', 'check.external.expiration'])->group(function () {
     Route::get('/paths/{partner}/{collection}/{path}', [CollectionController::class, 'path'])->where('path', '.*')->name('collections.path');
 
     Route::get('/download/{path}', [ExternalApiService::class, 'downloadFile'])->where('path', '.*');
+
+    Route::get('/preview/{path}', [FilePreviewController::class, 'show'])->where('path', '.*')->name('file.preview');
 
     // List files from path
     Route::get('/fs/{path}', [ExternalApiService::class, 'getPath'])->where('path', '.*');

@@ -106,6 +106,7 @@ export interface FileItem {
   last_modified: string;
   url: string;
   download_url?: string;
+  preview_url?: string;
   children?: FileItem[];
   path?: string;
   mime_type?: string;

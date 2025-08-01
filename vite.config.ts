@@ -15,7 +15,6 @@ export default defineConfig({
         tailwindcss(),
     ],
     optimizeDeps: {
-        include: ['mime'], // Add this line
     },
     esbuild: {
         jsx: 'automatic',

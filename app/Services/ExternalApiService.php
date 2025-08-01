@@ -163,7 +163,9 @@ class ExternalApiService
               $data['children'][$index]['url'] = str_replace($this->endpoint, '/fs/', $data['children'][$index]['url']);
             }
             if (isset($data['children'][$index]['download_url'])) {
-              $data['children'][$index]['download_url'] = str_replace($this->endpoint, '/download/', $data['children'][$index]['download_url']);
+              $download_url = $data['children'][$index]['download_url'];
+              $data['children'][$index]['download_url'] = str_replace($this->endpoint, '/download/', $download_url);
+              $data['children'][$index]['preview_url'] = str_replace($this->endpoint, '/preview/', $download_url);
             }
           }
         }
