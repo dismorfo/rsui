@@ -99,11 +99,19 @@ export function PartnerCollectionsTable({ collections }: CollectionTableProps) {
       },
       {
         accessorKey: 'display_code',
-        header: () => (
-          <div className="flex flex-col items-start">
-            <div className="text-left py-2 px-4">Code</div>
-          </div>
-        ),
+        header: ({ column }) => {
+          return (
+            <div className="flex flex-col items-start">
+              <Button
+                variant="ghost"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              >
+                Code
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )
+        },
         cell: ({ row }) => {
           return (
             <div className="text-left font-medium">

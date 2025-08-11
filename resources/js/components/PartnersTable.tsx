@@ -54,7 +54,7 @@ function DebouncedInput({
       onChange(value)
     }, debounce)
 
-    return () => clearTimeout(timeout)  
+    return () => clearTimeout(timeout)
   }, [value, debounce, onChange])
 
   return (
@@ -99,11 +99,19 @@ export function PartnersTable({ partners }: PartnersTableProps) {
       },
       {
         accessorKey: 'code',
-        header: () => (
-          <div className="flex flex-col items-start">
-            <div className="text-left py-2 px-4">Code</div>
-          </div>
-        ),
+        header: ({ column }) => {
+          return (
+            <div className="flex flex-col items-start">
+              <Button
+                variant="ghost"
+                onClick={() => column.toggleSorting(column.getIsSorted() === "asc")}
+              >
+                Code
+                <ArrowUpDown className="ml-2 h-4 w-4" />
+              </Button>
+            </div>
+          )
+        },
         enableSorting: true,
         filterFn: 'includesStringSensitive',
         cell: ({ row }) => {
