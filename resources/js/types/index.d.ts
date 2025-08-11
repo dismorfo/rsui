@@ -110,10 +110,12 @@ export interface FileItem {
   children?: FileItem[];
   path?: string;
   mime_type?: string;
-  preview?: boolean; // Indicates if the file can be previewed
-  is_directory?: boolean; // Indicates if the item is a directory
-  is_file?: boolean; // Indicates if the item is a file
+  preview?: boolean;
+  is_directory?: boolean;
+  is_file?: boolean;
+  is_empty_dir?: boolean;
 }
+
 export interface FileExplorerProps {
   storage: Storage;
 }

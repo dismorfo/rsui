@@ -228,9 +228,11 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                 const rowClasses = cn(
                   isEven ? 'bg-background' : 'bg-muted/50',
                   'hover:bg-accent',
-                  item.object_type === 'directory' && 'cursor-pointer',
+                  item.object_type === 'directory' && !item.is_empty_dir && 'cursor-pointer',
                   selected === item.name && 'ring ring-primary'
                 );
+
+                console.log(item)
 
                 item.preview = false;
 
@@ -256,62 +258,87 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                    }
                 }
 
-                return item.object_type === 'file' ? (
-                    <tr
-                        key={item.name}
-                        className={rowClasses}
-                        tabIndex={0}
-                    >
-                      <td className="p-2 max-w-xs" title={item.name}>{item.name}</td>
-                      <td className="p-2">{item.object_type}</td>
-                      <td className="p-2">{item.display_size}</td>
-                      <td className="p-2">
-                          {item.preview && item.download_url ? (
-                            ( <FilePreviewDialogTrigger item={item} triggerLabel="Preview" /> )
-                          ) : (
-                            <div>
+                const is_empty_dir = item.is_empty_dir === true;
+
+                if (item.object_type === 'file') {
+                    return (
+                        <tr
+                            key={item.name}
+                            className={rowClasses}
+                            tabIndex={0}
+                        >
+                          <td className="p-2 max-w-xs" title={item.name}>{item.name}</td>
+                          <td className="p-2">{item.object_type}</td>
+                          <td className="p-2">{item.display_size}</td>
+                          <td className="p-2">
+                              {item.preview && item.download_url ? (
+                                ( <FilePreviewDialogTrigger item={item} triggerLabel="Preview" /> )
+                              ) : (
+                                <div>
+                                  <HoverCard>
+                                    <HoverCardTrigger><span className="text-muted-foreground/50">Not available</span></HoverCardTrigger>
+                                    <HoverCardContent>
+                                      <span>Unavailable at the moment — please check back soon.</span>
+                                    </HoverCardContent>
+                                  </HoverCard>
+                                </div>
+                              )}
+                          </td>
+                          <td className="p-2">
+                            {isDownloadable(item) && item.download_url ? (
+                              <a href={item.download_url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
+                                Download
+                              </a>
+                            ) : (
                               <HoverCard>
-                                <HoverCardTrigger><span className="text-muted-foreground/50">Not available</span></HoverCardTrigger>
+                                <HoverCardTrigger><span className="text-muted-foreground/50">N/A</span></HoverCardTrigger>
                                 <HoverCardContent>
-                                  <span>Unavailable at the moment — please check back soon.</span>
+                                  <span>Download for files over 2GB of size is not currently supported.</span>
                                 </HoverCardContent>
                               </HoverCard>
-                            </div>
-                          )}
-                      </td>
-                      <td className="p-2">
-                        {isDownloadable(item) && item.download_url ? (
-                          <a href={item.download_url} className="text-primary hover:underline" target="_blank" rel="noopener noreferrer">
-                            Download
-                          </a>
-                        ) : (
-                          <HoverCard>
-                            <HoverCardTrigger><span className="text-muted-foreground/50">N/A</span></HoverCardTrigger>
-                            <HoverCardContent>
-                              <span>Download for files over 2GB of size is not currently supported.</span>
-                            </HoverCardContent>
-                          </HoverCard>
-                        )}
-                      </td>
-                      <td className="p-2">{formatDate(item.last_modified)}</td>
-                      <td className="p-2"></td>
-                    </tr>
-                ) : (
-                  <tr
-                    key={item.name}
-                    className={rowClasses}
-                    onClick={() => handleClick(item)}
-                    tabIndex={0}
-                  >
-                    <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
-                    <td className="p-2">{item.object_type}</td>
-                    <td className="p-2"></td>
-                    <td className="p-2"></td>
-                    <td className="p-2"></td>
-                    <td className="p-2">{formatDate(item.last_modified)}</td>
-                    <td className="p-2"><ChevronRight size={24} className="text-gray-400" /></td>
-                  </tr>
-                );
+                            )}
+                          </td>
+                          <td className="p-2">{formatDate(item.last_modified)}</td>
+                          <td className="p-2"></td>
+                        </tr>
+                    );
+                } else if (item.object_type === 'directory') {
+                    if (is_empty_dir) {
+                        return (
+                          <tr
+                            key={item.name}
+                            className={rowClasses}
+                            tabIndex={0}
+                          >
+                            <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
+                            <td className="p-2 text-muted-foreground/50">empty directory</td>
+                            <td className="p-2"></td>
+                            <td className="p-2"></td>
+                            <td className="p-2"></td>
+                            <td className="p-2">{formatDate(item.last_modified)}</td>
+                            <td className="p-2"></td>
+                          </tr>
+                        );
+                    } else {
+                        return (
+                          <tr
+                            key={item.name}
+                            className={rowClasses}
+                            onClick={() => handleClick(item)}
+                            tabIndex={0}
+                          >
+                            <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
+                            <td className="p-2">{item.object_type}</td>
+                            <td className="p-2"></td>
+                            <td className="p-2"></td>
+                            <td className="p-2"></td>
+                            <td className="p-2">{formatDate(item.last_modified)}</td>
+                            <td className="p-2"><ChevronRight size={24} className="text-gray-400" /></td>
+                          </tr>
+                        );
+                    }
+                }
+                return null;
               })}
             </tbody>
           </table>
