@@ -228,7 +228,7 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                 const rowClasses = cn(
                   isEven ? 'bg-background' : 'bg-muted/50',
                   'hover:bg-accent',
-                  item.object_type === 'directory' && !item.is_empty_dir && 'cursor-pointer',
+                  item.object_type === 'directory' && 'cursor-pointer',
                   selected === item.name && 'ring ring-primary'
                 );
 
@@ -303,40 +303,26 @@ const FileExplorer = ({ storage, partnerId, collectionId }: { storage: Storage[]
                         </tr>
                     );
                 } else if (item.object_type === 'directory') {
+                    let object_type = 'directory';
                     if (is_empty_dir) {
-                        return (
-                          <tr
-                            key={item.name}
-                            className={rowClasses}
-                            tabIndex={0}
-                          >
-                            <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
-                            <td className="p-2 text-muted-foreground/50">empty directory</td>
-                            <td className="p-2"></td>
-                            <td className="p-2"></td>
-                            <td className="p-2"></td>
-                            <td className="p-2">{formatDate(item.last_modified)}</td>
-                            <td className="p-2"></td>
-                          </tr>
-                        );
-                    } else {
-                        return (
-                          <tr
+                      object_type = 'empty directory'
+                    }
+                    return (
+                        <tr
                             key={item.name}
                             className={rowClasses}
                             onClick={() => handleClick(item)}
                             tabIndex={0}
-                          >
-                            <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
-                            <td className="p-2">{item.object_type}</td>
-                            <td className="p-2"></td>
-                            <td className="p-2"></td>
-                            <td className="p-2"></td>
-                            <td className="p-2">{formatDate(item.last_modified)}</td>
-                            <td className="p-2"><ChevronRight size={24} className="text-gray-400" /></td>
-                          </tr>
-                        );
-                    }
+                        >
+                          <td className="p-2 truncate max-w-xs" title={item.name}>{item.name}</td>
+                          <td className="p-2">{object_type}</td>
+                          <td className="p-2"></td>
+                          <td className="p-2"></td>
+                          <td className="p-2"></td>
+                          <td className="p-2">{formatDate(item.last_modified)}</td>
+                          <td className="p-2"><ChevronRight size={24} className="text-gray-400" /></td>
+                        </tr>
+                    );
                 }
                 return null;
               })}
